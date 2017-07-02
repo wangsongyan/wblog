@@ -4,7 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	//"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/controllers"
+	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
+	"html/template"
 )
 
 func main() {
@@ -14,8 +16,13 @@ func main() {
 
 	router := gin.Default()
 
-	router.LoadHTMLGlob("views/**/*")
+	//router.LoadHTMLGlob("views/**/*")
+	setTemplate(router)
 	router.Static("/static", "./static")
+
+	router.GET("/", controllers.IndexGet)
+	router.GET("/index", controllers.IndexGet)
+	router.GET("/archives/:year/:month", controllers.ArchiveGet)
 
 	router.GET("/page/:id", controllers.PageGet)
 	router.GET("/post/:id", controllers.PostGet)
@@ -44,4 +51,28 @@ func main() {
 	}
 
 	router.Run(":8090")
+}
+
+func setTemplate(engine *gin.Engine) {
+
+	funcMap := template.FuncMap{
+		"dateFormat": helpers.DateFormat,
+		"substring":  helpers.Substring,
+		"isOdd":      helpers.IsOdd,
+		"isEven":     helpers.IsEven,
+	}
+
+	if gin.IsDebugging() {
+		render := helpers.New()
+		render.FuncMap = funcMap
+		render.Glob = "views/**/*"
+		engine.HTMLRender = render
+	} else {
+		t, err := template.ParseGlob("views/**/*")
+		if err == nil {
+			t.Funcs(funcMap)
+		}
+		engine.SetHTMLTemplate(template.Must(t, err))
+	}
+
 }
