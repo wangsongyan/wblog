@@ -24,9 +24,11 @@ func PageNew(c *gin.Context) {
 }
 
 func PageCreate(c *gin.Context) {
+	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	page := &models.Page{
+		Title:       title,
 		Body:        body,
 		IsPublished: isPublished,
 	}
@@ -55,11 +57,12 @@ func PageEdit(c *gin.Context) {
 
 func PageUpdate(c *gin.Context) {
 	id := c.Param("id")
+	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
-		page := &models.Page{Body: body, IsPublished: isPublished}
+		page := &models.Page{Title: title, Body: body, IsPublished: isPublished}
 		page.ID = uint(pid)
 		err = page.Update()
 		if err == nil {

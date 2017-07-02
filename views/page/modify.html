@@ -91,6 +91,7 @@
 
         <!-- create or update a article -->
         <form action="/admin/page/{{.page.ID}}/edit" method="post" id="pageForm" class="form-group">
+            <input name="title" type="text" class="form-control" placeholder="Title" value="{{.post.Title}}"/><br/>
             <textarea id="demo" name="body">{{.page.Body}}</textarea><br/>
         </form>
     </div>

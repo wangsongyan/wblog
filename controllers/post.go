@@ -30,10 +30,10 @@ func PostCreate(c *gin.Context) {
 	isPublished := c.PostForm("isPublished")
 
 	post := &models.Post{
-		Title: title,
+		Title:       title,
+		Body:        body,
+		IsPublished: isPublished,
 	}
-	post.Body = body
-	post.IsPublished = isPublished
 	err := post.Insert()
 	if err == nil {
 		c.Redirect(http.StatusMovedPermanently, "/post/"+strconv.FormatUint(uint64(post.ID), 10))
@@ -66,10 +66,12 @@ func PostUpdate(c *gin.Context) {
 	isPublished := c.PostForm("isPublished")
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
-		post := &models.Post{Title: title}
+		post := &models.Post{
+			Title:       title,
+			Body:        body,
+			IsPublished: isPublished,
+		}
 		post.ID = uint(pid)
-		post.Body = body
-		post.IsPublished = isPublished
 		err = post.Update()
 		if err == nil {
 			c.Redirect(http.StatusMovedPermanently, "/post/"+id)

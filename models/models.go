@@ -18,6 +18,7 @@ type BaseModel struct {
 // table pages
 type Page struct {
 	BaseModel
+	Title       string // title
 	Body        string // body
 	View        int    // view count
 	IsPublished string // published or not
@@ -25,9 +26,12 @@ type Page struct {
 
 // table posts
 type Post struct {
-	Page
-	Title string // title
-	Tags  []*Tag `gorm:"-"` // tags of post
+	BaseModel
+	Title       string // title
+	Body        string // body
+	View        int    // view count
+	IsPublished string // published or not
+	Tags        []*Tag `gorm:"-"` // tags of post
 }
 
 // table tags
@@ -66,7 +70,7 @@ func (page *Page) Insert() error {
 }
 
 func (page *Page) Update() error {
-	return DB.Model(page).Update(Page{Body: page.Body, IsPublished: page.IsPublished}).Error
+	return DB.Model(page).Update(Page{Title: page.Title, Body: page.Body, IsPublished: page.IsPublished}).Error
 }
 
 func (page *Page) Delete() error {
