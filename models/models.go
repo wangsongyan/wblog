@@ -49,6 +49,19 @@ type PostTag struct {
 	TagId  uint // tag id
 }
 
+// table users
+type User struct {
+	gorm.Model
+	Email       string    `gorm:"unique_index"` //邮箱
+	Telephone   string    //手机号码
+	Password    string    //密码
+	VerifyState string    //邮箱验证状态
+	SecretKey   string    //密钥
+	OutTime     time.Time //过期时间
+	GithubToken string    // github登录信息
+	IsAdmin     bool      //是否是管理员
+}
+
 // query result
 type QrArchive struct {
 	ArchiveDate time.Time //month
@@ -67,7 +80,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{})
+	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
 	return db
@@ -228,4 +241,22 @@ func ListTagByPostId(id string) ([]*Tag, error) {
 		tags = append(tags, &tag)
 	}
 	return tags, nil
+}
+
+// user
+// insert user
+func (user *User) Insert() error {
+	return DB.Create(user).Error
+}
+
+// update user
+func (user *User) Update() error {
+	return DB.Save(user).Error
+}
+
+//
+func GetUserByUsername(username string) (*User, error) {
+	var user User
+	err := DB.First(&user, "email = ?", username).Error
+	return &user, err
 }
