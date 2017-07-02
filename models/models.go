@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	//_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"strconv"
 	"time"
@@ -46,6 +47,14 @@ type PostTag struct {
 	BaseModel
 	PostId uint // post id
 	TagId  uint // tag id
+}
+
+// query result
+type QrArchive struct {
+	ArchiveDate time.Time //month
+	Total       int       //total
+	Year        int       // year
+	Month       int       // month
 }
 
 var DB *gorm.DB
@@ -123,11 +132,11 @@ func ListPost(tag string) ([]*Post, error) {
 		defer rows.Close()
 		for rows.Next() {
 			var post Post
-			rows.Scan(&post)
+			DB.ScanRows(rows, &post)
 			posts = append(posts, &post)
 		}
 	} else {
-		err = DB.First(posts).Error
+		err = DB.Find(&posts).Error
 	}
 	return posts, err
 }
@@ -140,6 +149,46 @@ func GetPostById(id string) (*Post, error) {
 	var post Post
 	err = DB.First(&post, "id = ?", pid).Error
 	return &post, err
+}
+
+func ListPostArchives() ([]*QrArchive, error) {
+	var archives []*QrArchive
+	sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts group by month order by month desc`
+	rows, err := DB.Raw(sql).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var archive QrArchive
+		var month string
+		rows.Scan(&month, &archive.Total)
+		//DB.ScanRows(rows, &archive)
+		archive.ArchiveDate, _ = time.Parse("2006-01", month)
+		archive.Year = archive.ArchiveDate.Year()
+		archive.Month = int(archive.ArchiveDate.Month())
+		archives = append(archives, &archive)
+	}
+	return archives, nil
+}
+
+func ListPostByArchive(year, month string) ([]*Post, error) {
+	if len(month) == 1 {
+		month = "0" + month
+	}
+	condition := fmt.Sprintf("%s-%s", year, month)
+	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ?", condition).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	posts := make([]*Post, 0)
+	for rows.Next() {
+		var post Post
+		DB.ScanRows(rows, &post)
+		posts = append(posts, &post)
+	}
+	return posts, nil
 }
 
 // Tag

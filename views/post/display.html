@@ -104,7 +104,9 @@
                     </tr><!-- show tags -->
 
                     <!-- display article created time -->
-                    <span class="createdTime" th:text="${#dates.format(article.createdTime, 'yy-MM-dd HH:mm')}"></span>
+                    <span class="createdTime" th:text="${#dates.format(article.createdTime, 'yy-MM-dd HH:mm')}">
+                        {{dateFormat .post.CreatedAt "06-01-02 15:04"}}
+                    </span>
                 </div><!-- display article info -->
                 <br/>
 
