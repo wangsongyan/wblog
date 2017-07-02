@@ -6,6 +6,7 @@ import (
 	"github.com/wangsongyan/wblog/controllers"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 	"html/template"
 )
 
@@ -18,15 +19,25 @@ func main() {
 
 	//router.LoadHTMLGlob("views/**/*")
 	setTemplate(router)
+	system.LoadConfiguration("conf/conf.yaml")
 	router.Static("/static", "./static")
 
 	router.GET("/", controllers.IndexGet)
 	router.GET("/index", controllers.IndexGet)
-	router.GET("/archives/:year/:month", controllers.ArchiveGet)
+
+	if system.GetConfiguration().SignupEnabled {
+		router.GET("/signup", controllers.SignupGet)
+		router.POST("/signup", controllers.SignupPost)
+	}
+	// user signin and logout
+	router.GET("/signin", controllers.SigninGet)
+	router.POST("/signin", controllers.SigninPost)
+	router.GET("/logout", controllers.LogoutGet)
 
 	router.GET("/page/:id", controllers.PageGet)
 	router.GET("/post/:id", controllers.PostGet)
 	router.GET("/tag/:id", controllers.TagGet)
+	router.GET("/archives/:year/:month", controllers.ArchiveGet)
 
 	authorized := router.Group("/admin")
 	{
