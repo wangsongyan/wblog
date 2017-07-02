@@ -12,9 +12,10 @@ type Configuration struct {
 	QiniuAppSecret  string `yaml:"qiniu_appsecret"`
 	GithubAppKey    string `yaml:"github_appkey"` // github
 	GithubAppSecret string `yaml:"github_appsecret"`
-	SmtpUsername    string `yaml:"smtp_username"` // username
-	SmtpPassword    string `yaml:"smtp_password"` //password
-	SmtpHost        string `yaml:"smtp_host"`     //host
+	SmtpUsername    string `yaml:"smtp_username"`  // username
+	SmtpPassword    string `yaml:"smtp_password"`  //password
+	SmtpHost        string `yaml:"smtp_host"`      //host
+	SessionSecret   string `yaml:"session_secret"` //session_secret
 }
 
 var configuration *Configuration
