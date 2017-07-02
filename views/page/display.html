@@ -1,0 +1,113 @@
+{{define "page/display.html"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Page - {{.page}}</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="/static/css/blog-post.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery -->
+    <script src="/static/js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <!-- github markdown css -->
+    <link rel="stylesheet" href="/static/css/markdown.css" />
+    <!-- markdown parse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.1/markdown-it.min.js"></script>
+
+    <!-- code syntax highlighting -->
+    <script src="https://cdn.jsdelivr.net/highlight.js/latest/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css" />
+    <script>hljs.initHighlightingOnLoad();</script>
+
+    <script>
+        $(document).ready(function () {
+            // markdown parse
+            var md = window.markdownit();
+            var result = md.render($("#body").text());
+            $("#body").html(result);
+
+            var aTagArr = [].slice.apply(document.getElementsByTagName("a"));
+            aTagArr.forEach(function (e, i) {
+                e.href.indexOf("_blank") > -1 ? e.target = "_blank" : null;
+            });
+
+            $("#articleDelete").click(function (event) {
+                if (confirm("Are you sure to delete?")) {
+                    articleDelete($("#articleId").text());
+                }
+            });
+
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 100) {
+                    $('#back-to-top').fadeIn();
+                } else {
+                    $('#back-to-top').fadeOut();
+                }
+            });
+
+            // scroll body to 0px on click
+            $('#back-to-top').click(function () {
+                $('#back-to-top').tooltip('hide');
+                $('body,html').animate({
+                    scrollTop: 0
+                }, 800);
+                return false;
+            });
+
+            $('#back-to-top').tooltip('show');
+        });
+    </script>
+
+</head>
+
+<body>
+
+{{template "navigation.html"}}
+
+<!-- Page Content -->
+<div class="container">
+
+    <div class="row">
+
+        <!-- Blog Post Content Column -->
+        <div class="col-lg-10 col-lg-offset-1">
+
+            <!-- page content-->
+            <div id="body">{{.page.Body}}</div>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+</div>
+<!-- /.container -->
+
+{{template "footer.html"}}
+
+</body>
+
+</html>
+{{end}}

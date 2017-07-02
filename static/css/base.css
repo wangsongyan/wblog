@@ -1,0 +1,40 @@
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1024px;
+    }
+}
+
+.back-to-top {
+    cursor: pointer;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display:none;
+}
+
+body {
+    font-family: -apple-system,SF UI Display,Arial,PingFang SC,Hiragino Sans GB,Microsoft YaHei,WenQuanYi Micro Hei,sans-serif;
+}
+
+.main {
+    margin-top: 20px;
+    margin-bottom: 100px;
+}
+
+.articleBody {
+    color: #58666e;
+}
+
+.articleTitle {
+    font-size: 18px;
+    color: #444;
+}
+
+.createdTime {
+    float: right;
+    color: #8c8c8c;
+}
+
+.articleInfo {
+    margin-bottom: 10px;
+}
