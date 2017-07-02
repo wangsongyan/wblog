@@ -18,3 +18,4 @@
 
 # Output of project
 *.db
+request.token

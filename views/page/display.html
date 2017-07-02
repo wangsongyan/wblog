@@ -33,6 +33,9 @@
 
     <!-- github markdown css -->
     <link rel="stylesheet" href="/static/css/markdown.css" />
+
+    <link rel="stylesheet" href="/static/css/base.css"/>
+
     <!-- markdown parse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/8.3.1/markdown-it.min.js"></script>
 
@@ -93,10 +96,10 @@
 
         <!-- Blog Post Content Column -->
         <div class="col-lg-10 col-lg-offset-1">
-
+            <article class="markdown-body">
             <!-- page content-->
             <div id="body">{{.page.Body}}</div>
-
+            </article>
         </div>
 
     </div>

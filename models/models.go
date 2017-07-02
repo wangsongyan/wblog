@@ -52,14 +52,15 @@ type PostTag struct {
 // table users
 type User struct {
 	gorm.Model
-	Email       string    `gorm:"unique_index"` //邮箱
-	Telephone   string    //手机号码
-	Password    string    //密码
-	VerifyState string    //邮箱验证状态
-	SecretKey   string    //密钥
-	OutTime     time.Time //过期时间
-	GithubToken string    // github登录信息
-	IsAdmin     bool      //是否是管理员
+	Email         string    `gorm:"unique_index"` //邮箱
+	Telephone     string    //手机号码
+	Password      string    //密码
+	VerifyState   string    //邮箱验证状态
+	SecretKey     string    //密钥
+	OutTime       time.Time //过期时间
+	GithubLoginId string    // github唯一标识
+	IsAdmin       bool      //是否是管理员
+	AvatarUrl     string    // 头像链接
 }
 
 // query result
@@ -258,5 +259,17 @@ func (user *User) Update() error {
 func GetUserByUsername(username string) (*User, error) {
 	var user User
 	err := DB.First(&user, "email = ?", username).Error
+	return &user, err
+}
+
+//
+func (user *User) FirstOrCreate() (*User, error) {
+	err := DB.FirstOrCreate(user, "github_login_id = ?", user.GithubLoginId).Error
+	return user, err
+}
+
+func GetUser(id interface{}) (*User, error) {
+	var user User
+	err := DB.First(&user, id).Error
 	return &user, err
 }

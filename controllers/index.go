@@ -23,3 +23,10 @@ func IndexGet(c *gin.Context) {
 		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 }
+
+func AdminIndex(c *gin.Context) {
+	user, _ := c.Get("User")
+	c.JSON(http.StatusOK, gin.H{
+		"data": user,
+	})
+}
