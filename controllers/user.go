@@ -24,14 +24,17 @@ var oauthCfg = &oauth.Config{
 }
 
 func SigninGet(c *gin.Context) {
-	s := sessions.Default(c)
-	if s.Get("User") != nil {
+	/*session := sessions.Default(c)
+	if session.Get("UserID") != nil {
 		c.Redirect(http.StatusMovedPermanently, "/admin/index")
 	} else {
 		c.HTML(http.StatusOK, "user/signin.html", gin.H{
 			"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
 		})
-	}
+	}*/
+	c.HTML(http.StatusOK, "user/signin.html", gin.H{
+		"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
+	})
 }
 
 func SignupGet(c *gin.Context) {
@@ -40,9 +43,9 @@ func SignupGet(c *gin.Context) {
 
 func LogoutGet(c *gin.Context) {
 	s := sessions.Default(c)
-	s.Clear()
+	s.Delete("UserID")
 	s.Save()
-	c.Redirect(http.StatusMovedPermanently, "/signin")
+	c.Redirect(http.StatusSeeOther, "/signin")
 }
 
 func SignupPost(c *gin.Context) {
@@ -86,7 +89,11 @@ func SigninPost(c *gin.Context) {
 			s.Set("UserID", user.ID)
 			//s.Set("User", user)
 			s.Save()
-			c.Redirect(http.StatusMovedPermanently, "/admin/index")
+			if user.IsAdmin {
+				c.Redirect(http.StatusMovedPermanently, "/admin/index")
+			} else {
+				c.Redirect(http.StatusMovedPermanently, "/")
+			}
 			return
 		} else {
 			err = errors.New("invalid username or password.")
@@ -143,8 +150,7 @@ func Oauth2Callback(c *gin.Context) {
 						err = errors.New("assert failed.")
 					}
 				} else {
-					user := &models.User{
-						Email:         githubinfo.Login,
+					user = &models.User{
 						GithubLoginId: githubinfo.Login,
 						AvatarUrl:     githubinfo.AvatarUrl,
 					}
@@ -169,4 +175,63 @@ func Oauth2Callback(c *gin.Context) {
 	}
 	c.Redirect(http.StatusMovedPermanently, "/signin")
 
+}
+
+func ProfileGet(c *gin.Context) {
+	sessionUser, exists := c.Get("User")
+	if exists {
+		c.JSON(http.StatusOK, gin.H{
+			"user": sessionUser,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "login first please",
+		})
+	}
+}
+
+func ProfileUpdate(c *gin.Context) {
+	avatarUrl := c.PostForm("avatarUrl")
+	nickName := c.PostForm("nickName")
+	sessionUser, _ := c.Get("User")
+	if user, ok := sessionUser.(*models.User); ok {
+		err := user.UpdateProfile(avatarUrl, nickName)
+		if err == nil {
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": true,
+				"user":    models.User{AvatarUrl: avatarUrl, NickName: nickName},
+			})
+		} else {
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": false,
+				"message": err.Error(),
+			})
+		}
+	}
+}
+
+func BindEmail(c *gin.Context) {
+	email := c.PostForm("email")
+	sessionUser, _ := c.Get("User")
+	if user, ok := sessionUser.(*models.User); ok {
+		if len(user.Email) > 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": false,
+				"message": "email have bound.",
+			})
+		} else {
+			_, err := models.GetUserByUsername(email)
+			if err != nil {
+				err := user.UpdateEmail(email)
+				c.JSON(http.StatusOK, gin.H{
+					"succeed": err == nil,
+				})
+			} else {
+				c.JSON(http.StatusOK, gin.H{
+					"succeed": false,
+					"message": "email have be registered!",
+				})
+			}
+		}
+	}
 }

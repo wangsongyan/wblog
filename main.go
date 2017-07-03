@@ -42,6 +42,9 @@ func main() {
 	router.GET("/logout", controllers.LogoutGet)
 	router.GET("/oauth2callback", controllers.Oauth2Callback)
 
+	router.POST("/new_comment", controllers.CommentPost)
+	router.POST("/comment/:id/delete", controllers.CommentDelete)
+
 	router.GET("/page/:id", controllers.PageGet)
 	router.GET("/post/:id", controllers.PostGet)
 	router.GET("/tag/:id", controllers.TagGet)
@@ -71,6 +74,11 @@ func main() {
 
 		// tag
 		authorized.POST("/new_tag", controllers.TagCreate)
+
+		// profile
+		authorized.GET("/profile", controllers.ProfileGet)
+		authorized.POST("/profile", controllers.ProfileUpdate)
+		authorized.POST("/profile/bind", controllers.BindEmail)
 	}
 
 	router.Run(":8090")
@@ -140,11 +148,13 @@ func SharedData() gin.HandlerFunc {
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if user, _ := c.Get("User"); user != nil {
-			c.Next()
-		} else {
-			logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
-			c.HTML(http.StatusForbidden, "errors/403", nil)
-			c.Abort()
+			if u, ok := user.(*models.User); ok && u.IsAdmin {
+				c.Next()
+				return
+			}
 		}
+		logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
+		c.HTML(http.StatusForbidden, "errors/403", nil)
+		c.Abort()
 	}
 }
