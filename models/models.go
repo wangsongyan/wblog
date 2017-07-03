@@ -28,11 +28,12 @@ type Page struct {
 // table posts
 type Post struct {
 	BaseModel
-	Title       string // title
-	Body        string // body
-	View        int    // view count
-	IsPublished string // published or not
-	Tags        []*Tag `gorm:"-"` // tags of post
+	Title       string     // title
+	Body        string     // body
+	View        int        // view count
+	IsPublished string     // published or not
+	Tags        []*Tag     `gorm:"-"` // tags of post
+	Comments    []*Comment `gorm:"-"` // comments of post
 }
 
 // table tags
@@ -52,15 +53,25 @@ type PostTag struct {
 // table users
 type User struct {
 	gorm.Model
-	Email         string    `gorm:"unique_index"` //邮箱
-	Telephone     string    //手机号码
-	Password      string    //密码
-	VerifyState   string    //邮箱验证状态
-	SecretKey     string    //密钥
+	Email         string    `gorm:"unique_index;default:null"` //邮箱
+	Telephone     string    `gorm:"unique_index;default:null"` //手机号码
+	Password      string    `gorm:"default:null"`              //密码
+	VerifyState   string    `gorm:"default:'0'"`               //邮箱验证状态
+	SecretKey     string    `gorm:"default:null"`              //密钥
 	OutTime       time.Time //过期时间
-	GithubLoginId string    // github唯一标识
+	GithubLoginId string    `gorm:"unique_index"` // github唯一标识
 	IsAdmin       bool      //是否是管理员
 	AvatarUrl     string    // 头像链接
+	NickName      string    // 昵称
+}
+
+// table comments
+type Comment struct {
+	BaseModel
+	UserID  uint   // 用户id
+	Content string // 内容
+	PostID  uint   // 文章id
+	//Replies []*Comment // 评论
 }
 
 // query result
@@ -81,7 +92,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{})
+	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
 	return db
@@ -272,4 +283,41 @@ func GetUser(id interface{}) (*User, error) {
 	var user User
 	err := DB.First(&user, id).Error
 	return &user, err
+}
+
+func (user *User) UpdateProfile(avatarUrl, nickName string) error {
+	return DB.Model(user).Update(User{AvatarUrl: avatarUrl, NickName: nickName}).Error
+}
+
+func (user *User) UpdateEmail(email string) error {
+	return DB.Model(user).Update(User{Email: email}).Error
+}
+
+func (user *User) UpdateGithubId(githubId string) error {
+	return DB.Model(user).Update(User{GithubLoginId: githubId}).Error
+}
+
+// Comment
+func (comment *Comment) Insert() error {
+	return DB.Create(comment).Error
+}
+
+func (comment *Comment) Delete() error {
+	return DB.Delete(comment).Error
+}
+
+func ListCommentByPostID(postId string) ([]*Comment, error) {
+	pid, err := strconv.ParseUint(postId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	var comments []*Comment
+	err = DB.Find(&comments, "post_id = ?", pid).Error
+	return comments, err
+}
+
+func GetComment(id interface{}) (*Comment, error) {
+	var comment Comment
+	err := DB.First(&comment, id).Error
+	return &comment, err
 }
