@@ -40,3 +40,10 @@ func IsOdd(number int) bool {
 func IsEven(number int) bool {
 	return number%2 == 0
 }
+
+func IsActive(arg1, arg2 string) string {
+	if arg1 == arg2 {
+		return "active"
+	}
+	return ""
+}

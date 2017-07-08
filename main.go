@@ -93,6 +93,7 @@ func setTemplate(engine *gin.Engine) {
 		"substring":  helpers.Substring,
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
+		"isActive":   helpers.IsActive,
 	}
 
 	if gin.IsDebugging() {
