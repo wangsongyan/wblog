@@ -66,10 +66,48 @@
             $('#postSave').click(function(event){
                 event.preventDefault();
                 $("#demo").text(simplemde.value());
+                var tags = new Array();
+                $(".tagButton .tagId").each(function(index,element){
+                    tags.push($(element).text());
+                });
+                $("#tags").val(tags.join(","));
                 $("#postForm").submit();
             });
 
+            $('#addTag').editable({
+                mode: "inline",
+                type: "text",
+                pk: 1,
+                url: "/admin/new_tag",
+                placeholder: "add a tag",
+                success: function (tag) {
+                    createButton(tag.data.ID, tag.data.Name);
+                },
+                error: function (e) {
+                    console.log(e);
+                },
+                display: function (value, response) {
+                    return false;   //disable this method
+                }
+            });
+
         });
+
+        function deleteTag(element){
+            $(element).parent().remove();
+        }
+
+        function createButton(tagId, tagName) {
+            var button = `<button class="btn btn-default btn-sm tagButton">
+                    <a href="/tag/` + tagId + `">` + tagName + `</a>
+                    <a class="removeArticleTag" href="#" onclick="deleteTag(this);">
+                        <span class="glyphicon glyphicon glyphicon-trash"></span>
+                    </a>
+                    <span class="tagId" hidden="hidden">` + tagId + `</span>
+                    </button>&nbsp;`;
+            $("#addTag").before(button);
+        }
+
     </script>
 
 </head>
@@ -84,13 +122,23 @@
 
         <!-- add a new tag -->
         <span id="tagBug">
-
+            {{range $tagkey,$tagvalue := .post.Tags}}
+            <button class="btn btn-default btn-sm tagButton">
+                    <a href="/tag/{{$tagvalue.ID}}">{{$tagvalue.Name}}</a>
+                    <a class="removeArticleTag" href="#" onclick="deleteTag(this);">
+                        <span class="glyphicon glyphicon glyphicon-trash"></span>
+                    </a>
+                    <span class="tagId" hidden="hidden">{{$tagvalue.ID}}</span>
+                    </button>&nbsp;
+            {{end}}
+            <span style="border: none" id="addTag" class="glyphicon glyphicon-edit"></span>
             <a id="postSave" class="glyphicon glyphicon-saved"
                style="float: right; padding-left: 15px;"></a>
         </span><br/><br/>
 
         <!-- create or update a article -->
         <form action="/admin/post/{{.post.ID}}/edit" method="post" id="postForm" class="form-group">
+            <input id="tags" name="tags" type="hidden">
             <input name="title" type="text" class="form-control" placeholder="Title" value="{{.post.Title}}"/><br/>
             <textarea id="demo" name="body">{{.post.Body}}</textarea><br/>
         </form>

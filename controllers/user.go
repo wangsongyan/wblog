@@ -16,7 +16,7 @@ import (
 
 var oauthCfg = &oauth.Config{
 	ClientId:     "25784931c6a043de301e",
-	ClientSecret: "",
+	ClientSecret: "5139df3ebfee3a52400cc307f1352ebcb911f596",
 	AuthURL:      "https://github.com/login/oauth/authorize?client_id=%s&scope=user:email",
 	TokenURL:     "https://github.com/login/oauth/access_token",
 	RedirectURL:  "http://localhost:8090/oauth2callback",

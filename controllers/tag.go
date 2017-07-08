@@ -9,10 +9,10 @@ import (
 )
 
 func TagCreate(c *gin.Context) {
-	name := c.PostForm("name")
+	name := c.PostForm("value")
 	tag := &models.Tag{Name: name}
 	err := tag.Insert()
-	if err != nil {
+	if err == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"data": tag,
 		})
