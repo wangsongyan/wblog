@@ -255,6 +255,19 @@ func ListTagByPostId(id string) ([]*Tag, error) {
 	return tags, nil
 }
 
+// post_tags
+func (pt *PostTag) Insert() error {
+	return DB.FirstOrCreate(pt, "post_id = ? and tag_id = ?", pt.PostId, pt.TagId).Error
+}
+
+func DeletePostTagByPostId(postId string) error {
+	pid, err := strconv.ParseUint(postId, 10, 64)
+	if err != nil {
+		return err
+	}
+	return DB.Delete(&PostTag{}, "post_id = ?", pid).Error
+}
+
 // user
 // insert user
 func (user *User) Insert() error {

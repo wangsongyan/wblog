@@ -5,6 +5,7 @@ import (
 	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func PostGet(c *gin.Context) {
@@ -26,6 +27,7 @@ func PostNew(c *gin.Context) {
 }
 
 func PostCreate(c *gin.Context) {
+	tags := c.PostForm("tags")
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
@@ -37,6 +39,19 @@ func PostCreate(c *gin.Context) {
 	}
 	err := post.Insert()
 	if err == nil {
+		if len(tags) > 0 {
+			tagArr := strings.Split(tags, ",")
+			for _, tag := range tagArr {
+				tagId, err := strconv.ParseUint(tag, 10, 64)
+				if err == nil {
+					pt := &models.PostTag{
+						PostId: post.ID,
+						TagId:  uint(tagId),
+					}
+					pt.Insert()
+				}
+			}
+		}
 		c.Redirect(http.StatusMovedPermanently, "/post/"+strconv.FormatUint(uint64(post.ID), 10))
 	} else {
 		c.HTML(http.StatusOK, "post/new.html", gin.H{
@@ -50,10 +65,9 @@ func PostEdit(c *gin.Context) {
 	id := c.Param("id")
 	post, err := models.GetPostById(id)
 	if err == nil {
-		tags, _ := models.ListTagByPostId(id)
+		post.Tags, _ = models.ListTagByPostId(id)
 		c.HTML(http.StatusOK, "post/modify.html", gin.H{
 			"post": post,
-			"tags": tags,
 		})
 	} else {
 		c.AbortWithStatus(http.StatusNotFound)
@@ -62,6 +76,7 @@ func PostEdit(c *gin.Context) {
 
 func PostUpdate(c *gin.Context) {
 	id := c.Param("id")
+	tags := c.PostForm("tags")
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
@@ -75,6 +90,22 @@ func PostUpdate(c *gin.Context) {
 		post.ID = uint(pid)
 		err = post.Update()
 		if err == nil {
+			// 删除tag
+			models.DeletePostTagByPostId(id)
+			// 添加tag
+			if len(tags) > 0 {
+				tagArr := strings.Split(tags, ",")
+				for _, tag := range tagArr {
+					tagId, err := strconv.ParseUint(tag, 10, 64)
+					if err == nil {
+						pt := &models.PostTag{
+							PostId: post.ID,
+							TagId:  uint(tagId),
+						}
+						pt.Insert()
+					}
+				}
+			}
 			c.Redirect(http.StatusMovedPermanently, "/post/"+id)
 		} else {
 			c.HTML(http.StatusOK, "post/modify.html", gin.H{
