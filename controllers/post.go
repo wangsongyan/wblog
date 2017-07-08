@@ -132,9 +132,9 @@ func PostDelete(c *gin.Context) {
 }
 
 func PostIndex(c *gin.Context) {
-	posts, err := models.ListPost("")
-	c.HTML(http.StatusOK, "", gin.H{
-		"posts":   posts,
-		"message": err.Error(),
+	posts, _ := models.ListPost("")
+	c.HTML(http.StatusOK, "post/index.html", gin.H{
+		"posts":  posts,
+		"Active": "posts",
 	})
 }
