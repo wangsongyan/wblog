@@ -235,3 +235,37 @@ func BindEmail(c *gin.Context) {
 		}
 	}
 }
+
+func UnbindEmail(c *gin.Context) {
+	sessionUser, _ := c.Get("User")
+	if user, ok := sessionUser.(*models.User); ok {
+		if len(user.Email) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": false,
+				"message": "email haven't bound.",
+			})
+		} else {
+			err := user.UpdateEmail("")
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": err == nil,
+			})
+		}
+	}
+}
+
+func UnbindGithub(c *gin.Context) {
+	sessionUser, _ := c.Get("User")
+	if user, ok := sessionUser.(*models.User); ok {
+		if len(user.GithubLoginId) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": false,
+				"message": "github haven't bound.",
+			})
+		} else {
+			err := user.UpdateGithubId("")
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": err == nil,
+			})
+		}
+	}
+}
