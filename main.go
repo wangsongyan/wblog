@@ -78,7 +78,9 @@ func main() {
 		// profile
 		authorized.GET("/profile", controllers.ProfileGet)
 		authorized.POST("/profile", controllers.ProfileUpdate)
-		authorized.POST("/profile/bind", controllers.BindEmail)
+		authorized.POST("/profile/email/bind", controllers.BindEmail)
+		authorized.POST("/profile/email/unbind", controllers.UnbindEmail)
+		authorized.POST("/profile/github/unbind", controllers.UnbindGithub)
 	}
 
 	router.Run(":8090")
