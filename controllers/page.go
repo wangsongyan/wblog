@@ -15,7 +15,7 @@ func PageGet(c *gin.Context) {
 			"page": page,
 		})
 	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		Handle404(c)
 	}
 }
 
@@ -51,7 +51,7 @@ func PageEdit(c *gin.Context) {
 			"page": page,
 		})
 	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		Handle404(c)
 	}
 }
 
@@ -83,7 +83,7 @@ func PageDelete(c *gin.Context) {
 		page.ID = uint(pid)
 		page.Delete()
 		if err == nil {
-			//c.Redirect(http.StatusMovedPermanently, "/page/"+id)
+			c.Redirect(http.StatusMovedPermanently, "/admin/page")
 		} else {
 			// TODO
 		}
@@ -94,7 +94,9 @@ func PageDelete(c *gin.Context) {
 
 func PageIndex(c *gin.Context) {
 	pages, _ := models.ListPage()
-	c.HTML(http.StatusOK, "page/", gin.H{
+	user, _ := c.Get("User")
+	c.HTML(http.StatusOK, "admin/page.html", gin.H{
 		"pages": pages,
+		"user":  user,
 	})
 }

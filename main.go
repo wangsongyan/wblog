@@ -29,6 +29,7 @@ func main() {
 
 	router.Static("/static", "./static")
 
+	router.NoRoute(controllers.Handle404)
 	router.GET("/", controllers.IndexGet)
 	router.GET("/index", controllers.IndexGet)
 
@@ -74,6 +75,9 @@ func main() {
 
 		// tag
 		authorized.POST("/new_tag", controllers.TagCreate)
+
+		//
+		authorized.GET("/user", controllers.UserIndex)
 
 		// profile
 		authorized.GET("/profile", controllers.ProfileGet)
@@ -157,7 +161,9 @@ func AuthRequired() gin.HandlerFunc {
 			}
 		}
 		logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
-		c.HTML(http.StatusForbidden, "errors/403", nil)
+		c.HTML(http.StatusForbidden, "errors/error.html", gin.H{
+			"message": "Forbidden!",
+		})
 		c.Abort()
 	}
 }
