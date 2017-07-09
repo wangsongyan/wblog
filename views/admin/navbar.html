@@ -63,13 +63,21 @@
                 <!-- User Account: style can be found in dropdown.less -->
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        {{if gt (len .user.AvatarUrl) 0}}
+                        <img src="{{.user.AvatarUrl}}" class="user-image" alt="User Image">
+                        {{else}}
                         <img src="/static/libs/AdminLTE/img/user2-160x160.jpg" class="user-image" alt="User Image">
+                        {{end}}
                         <span class="hidden-xs">{{.user.Email}}</span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
                         <li class="user-header">
+                            {{if gt (len .user.AvatarUrl) 0}}
+                            <img src="{{.user.AvatarUrl}}" class="img-circle" alt="User Image">
+                            {{else}}
                             <img src="/static/libs/AdminLTE/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                            {{end}}
 
                             <p>
                                 {{.user.Email}}
@@ -94,7 +102,7 @@
                         <!-- Menu Footer-->
                         <li class="user-footer">
                             <div class="pull-left">
-                                <a href="#" class="btn btn-default btn-flat">Profile</a>
+                                <a href="/admin/profile" class="btn btn-default btn-flat">Profile</a>
                             </div>
                             <div class="pull-right">
                                 <a href="/logout" class="btn btn-default btn-flat">Logout</a>

@@ -75,7 +75,7 @@
                             {{range .posts}}
                             <tr>
                                 <td>{{.ID}}</td>
-                                <td>{{.Title}}</td>
+                                <td><a href="/post/{{.ID}}" target="_blank">{{.Title}}</a></td>
                                 <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
                                 <td>{{dateFormat .UpdatedAt "06-01-02 15:04"}}</td>
                                 <td><a href="/admin/post/{{.ID}}/edit" target="_blank" class="btn btn-primary">编辑</a>

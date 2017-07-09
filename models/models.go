@@ -321,11 +321,11 @@ func (user *User) UpdateProfile(avatarUrl, nickName string) error {
 }
 
 func (user *User) UpdateEmail(email string) error {
-	return DB.Model(user).Update(User{Email: email}).Error
+	return DB.Model(user).Update("email", email).Error
 }
 
 func (user *User) UpdateGithubId(githubId string) error {
-	return DB.Model(user).Update(User{GithubLoginId: githubId}).Error
+	return DB.Model(user).Update("github_login_id", githubId).Error
 }
 
 func ListUsers() ([]*User, error) {
