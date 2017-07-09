@@ -18,7 +18,7 @@ func PostGet(c *gin.Context) {
 			"post": post,
 		})
 	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		Handle404(c)
 	}
 }
 
@@ -133,8 +133,10 @@ func PostDelete(c *gin.Context) {
 
 func PostIndex(c *gin.Context) {
 	posts, _ := models.ListPost("")
-	c.HTML(http.StatusOK, "post/index.html", gin.H{
+	user, _ := c.Get("User")
+	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":  posts,
 		"Active": "posts",
+		"user":   user,
 	})
 }

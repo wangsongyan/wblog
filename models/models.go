@@ -123,8 +123,14 @@ func GetPageById(id string) (*Page, error) {
 
 func ListPage() ([]*Page, error) {
 	var pages []*Page
-	err := DB.First(pages).Error
+	err := DB.Find(&pages).Error
 	return pages, err
+}
+
+func CountPage() int {
+	var count int
+	DB.Model(&Page{}).Count(&count)
+	return count
 }
 
 // Post
@@ -164,6 +170,12 @@ func ListPost(tag string) ([]*Post, error) {
 		err = DB.Find(&posts).Error
 	}
 	return posts, err
+}
+
+func CountPost() int {
+	var count int
+	DB.Model(&Post{}).Count(&count)
+	return count
 }
 
 func GetPostById(id string) (*Post, error) {
@@ -255,6 +267,12 @@ func ListTagByPostId(id string) ([]*Tag, error) {
 	return tags, nil
 }
 
+func CountTag() int {
+	var count int
+	DB.Model(&Tag{}).Count(&count)
+	return count
+}
+
 // post_tags
 func (pt *PostTag) Insert() error {
 	return DB.FirstOrCreate(pt, "post_id = ? and tag_id = ?", pt.PostId, pt.TagId).Error
@@ -310,6 +328,12 @@ func (user *User) UpdateGithubId(githubId string) error {
 	return DB.Model(user).Update(User{GithubLoginId: githubId}).Error
 }
 
+func ListUsers() ([]*User, error) {
+	var users []*User
+	err := DB.Find(&users, "is_admin = ?", false).Error
+	return users, err
+}
+
 // Comment
 func (comment *Comment) Insert() error {
 	return DB.Create(comment).Error
@@ -333,4 +357,10 @@ func GetComment(id interface{}) (*Comment, error) {
 	var comment Comment
 	err := DB.First(&comment, id).Error
 	return &comment, err
+}
+
+func CountComment() int {
+	var count int
+	DB.Model(&Comment{}).Count(&count)
+	return count
 }

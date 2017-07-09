@@ -16,7 +16,7 @@ import (
 
 var oauthCfg = &oauth.Config{
 	ClientId:     "25784931c6a043de301e",
-	ClientSecret: "5139df3ebfee3a52400cc307f1352ebcb911f596",
+	ClientSecret: "",
 	AuthURL:      "https://github.com/login/oauth/authorize?client_id=%s&scope=user:email",
 	TokenURL:     "https://github.com/login/oauth/access_token",
 	RedirectURL:  "http://localhost:8090/oauth2callback",
@@ -28,17 +28,17 @@ func SigninGet(c *gin.Context) {
 	if session.Get("UserID") != nil {
 		c.Redirect(http.StatusMovedPermanently, "/admin/index")
 	} else {
-		c.HTML(http.StatusOK, "user/signin.html", gin.H{
+		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 			"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
 		})
 	}*/
-	c.HTML(http.StatusOK, "user/signin.html", gin.H{
+	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 		"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
 	})
 }
 
 func SignupGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "user/signup.html", nil)
+	c.HTML(http.StatusOK, "auth/signup.html", nil)
 }
 
 func LogoutGet(c *gin.Context) {
@@ -64,7 +64,7 @@ func SignupPost(c *gin.Context) {
 		user.Password = helpers.Md5(user.Email + user.Password)
 		err = user.Insert()
 		if err == nil {
-			c.HTML(http.StatusOK, "user/signin.html", gin.H{
+			c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 				"user": user,
 			})
 			return
@@ -72,7 +72,7 @@ func SignupPost(c *gin.Context) {
 			err = errors.New("email already exists.")
 		}
 	}
-	c.HTML(http.StatusOK, "user/signup.html", gin.H{
+	c.HTML(http.StatusOK, "auth/signup.html", gin.H{
 		"message": err.Error(),
 	})
 }
@@ -101,7 +101,7 @@ func SigninPost(c *gin.Context) {
 	} else {
 		err = errors.New("error parameter.")
 	}
-	c.HTML(http.StatusOK, "user/signin.html", gin.H{
+	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 		"message": err.Error(),
 	})
 }
@@ -268,4 +268,13 @@ func UnbindGithub(c *gin.Context) {
 			})
 		}
 	}
+}
+
+func UserIndex(c *gin.Context) {
+	users, _ := models.ListUsers()
+	user, _ := c.Get("User")
+	c.HTML(http.StatusOK, "admin/user.html", gin.H{
+		"users": users,
+		"user":  user,
+	})
 }

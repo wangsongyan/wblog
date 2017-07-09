@@ -13,7 +13,7 @@
     <title>Page - Modify</title>
 
     <!-- Bootstrap Core CSS -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS -->
     <link href="/static/css/blog-post.css" rel="stylesheet">
@@ -26,10 +26,10 @@
     <![endif]-->
 
     <!-- jQuery -->
-    <script src="/static/js/jquery.js"></script>
+    <script src="/static/libs/jquery/jquery.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
-    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
 
     <!-- font awesome -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
@@ -91,7 +91,7 @@
 
         <!-- create or update a article -->
         <form action="/admin/page/{{.page.ID}}/edit" method="post" id="pageForm" class="form-group">
-            <input name="title" type="text" class="form-control" placeholder="Title" value="{{.post.Title}}"/><br/>
+            <input name="title" type="text" class="form-control" placeholder="Title" value="{{.page.Title}}"/><br/>
             <textarea id="demo" name="body">{{.page.Body}}</textarea><br/>
         </form>
     </div>
