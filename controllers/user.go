@@ -180,8 +180,9 @@ func Oauth2Callback(c *gin.Context) {
 func ProfileGet(c *gin.Context) {
 	sessionUser, exists := c.Get("User")
 	if exists {
-		c.JSON(http.StatusOK, gin.H{
-			"user": sessionUser,
+		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
+			"user":    sessionUser,
+			"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
 		})
 	} else {
 		c.JSON(http.StatusOK, gin.H{
