@@ -22,13 +22,15 @@ func DateFormat(date time.Time, layout string) string {
 
 // 截取字符串
 func Substring(source string, start, end int) string {
+	rs := []rune(source)
+	length := len(rs)
 	if start < 0 {
 		start = 0
 	}
-	if end > len(source) {
-		end = len(source)
+	if end > length {
+		end = length
 	}
-	return source[start:end]
+	return string(rs[start:end])
 }
 
 // 判断数字是否是奇数
@@ -39,11 +41,4 @@ func IsOdd(number int) bool {
 // 判断数字是否是偶数
 func IsEven(number int) bool {
 	return number%2 == 0
-}
-
-func IsActive(arg1, arg2 string) string {
-	if arg1 == arg2 {
-		return "active"
-	}
-	return ""
 }
