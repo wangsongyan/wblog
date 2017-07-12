@@ -1,7 +1,8 @@
 signup_enabled: true
 qiniu_accesskey:
 qiniu_secretkey:
-qiniu_bucket: wblog
+qiniu_fileserver:
+qiniu_bucket:
 github_appkey:
 github_appsecret:
 smtp_username:

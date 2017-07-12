@@ -57,6 +57,9 @@ func main() {
 		// index
 		authorized.GET("/index", controllers.AdminIndex)
 
+		// image upload
+		authorized.POST("/upload", controllers.Upload)
+
 		// page
 		authorized.GET("/page", controllers.PageIndex)
 		authorized.GET("/new_page", controllers.PageNew)
