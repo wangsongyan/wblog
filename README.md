@@ -9,7 +9,7 @@
 2. orm:[gorm](https://github.com/jinzhu/gorm)
 3. database:[sqlite3](https://github.com/mattn/go-sqlite3)
 4. ~~全文检索:[wukong](https://github.com/huichen/wukong)~~
-5. ~~文件存储:[七牛云存储](https://www.qiniu.com/)~~
+5. 文件存储:[七牛云存储](https://www.qiniu.com/)
 6. 配置文件 [go-yaml](https://github.com/go-yaml/yaml)
 
 ## 项目结构

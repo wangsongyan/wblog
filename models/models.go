@@ -156,7 +156,7 @@ func ListPost(tag string) ([]*Post, error) {
 		if err != nil {
 			return nil, err
 		}
-		rows, err := DB.Raw("select p.* from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ?", tagId).Rows()
+		rows, err := DB.Raw("select p.* from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ? order by created_at desc", tagId).Rows()
 		if err != nil {
 			return nil, err
 		}
@@ -167,7 +167,7 @@ func ListPost(tag string) ([]*Post, error) {
 			posts = append(posts, &post)
 		}
 	} else {
-		err = DB.Find(&posts).Error
+		err = DB.Order("created_at desc").Find(&posts).Error
 	}
 	return posts, err
 }
@@ -214,7 +214,7 @@ func ListPostByArchive(year, month string) ([]*Post, error) {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
-	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ?", condition).Rows()
+	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ? order by created_at desc", condition).Rows()
 	if err != nil {
 		return nil, err
 	}
