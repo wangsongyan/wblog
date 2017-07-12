@@ -45,9 +45,18 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
 
+    <!-- bootstrap fileinput-->
+    <link rel="stylesheet" href="/static/libs/bootstrap-fileinput/css/fileinput.min.css">
+    <script src="/static/libs/bootstrap-fileinput/js/fileinput.min.js"></script>
+
+    <!-- InlineAttachment -->
+    <script src="/static/libs/InlineAttachment/inline-attachment.js"></script>
+    <script src="/static/libs/InlineAttachment/codemirror-4.inline-attachment.js"></script>
+
     <script>
+        var simplemde;
         $(document).ready(function () {
-            var simplemde = new SimpleMDE({
+            simplemde = new SimpleMDE({
                 element: document.getElementById("demo"),
                 autofocus: false,
                 forceSync: true,
@@ -62,6 +71,8 @@
                 showIcons: ["code"],
                 status: false,
             });
+
+            initFileInput("file-Portrait", "/admin/upload");
 
             $('#postSave').click(function(event){
                 event.preventDefault();
@@ -107,6 +118,34 @@
                     </button>&nbsp;`;
             $("#addTag").before(button);
         }
+
+        //初始化fileinput控件（第一次初始化）
+        function initFileInput(ctrlName, uploadUrl) {
+            var control = $('#' + ctrlName);
+            control.fileinput({
+                language: 'zh', //设置语言
+                uploadUrl: uploadUrl, //上传的地址
+                allowedFileExtensions : ['jpg', 'png','gif'],//接收的文件后缀
+                showUpload: false, //是否显示上传按钮
+                showCaption: false,//是否显示标题
+                maxFileCount:1,
+                browseClass: "btn btn-primary", //按钮样式
+                previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+            }).on("fileuploaded", function(event, data) {
+                console.log(data.response);
+                if(data.response.succeed) {
+                    pos = simplemde.codemirror.getCursor();
+                    simplemde.codemirror.setSelection(pos, pos);
+                    simplemde.codemirror.replaceSelection('![]('+data.response.url+')');
+                }else{
+                    alert(data.response.message);
+                }
+            });
+        }
+
+        function show() {
+            $("#mymodal").modal();
+        }
     </script>
 
 </head>
@@ -136,6 +175,26 @@
     </div>
 
 </div>
+
+<div class="modal fade" tabindex="-1" role="dialog" id="mymodal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">图片上传</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" style="height: 400px">
+                    <input id="file-Portrait" type="file">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 {{template "footer.html"}}
 
