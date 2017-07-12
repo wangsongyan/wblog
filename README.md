@@ -17,16 +17,28 @@
 -wblog
     |-conf 配置文件目录
     |-controllers 控制器目录
+    |-Godeps godep配置目录
+    |-helpders 公共方法目录
     |-models 数据库访问目录
     |-static 静态资源目录
         |-css css文件目录
         |-images 图片目录
         |-js js文件目录
         |-libs js类库
+    |-system 系统配置文件加载目录
     |-tests 测试目录
+    |-vendor 项目依赖其他开源项目目录
     |-views 模板文件目录
     |-main.go 程序执行入口
 ```
+## TODO
+- [ ] 系统日志
+- [ ] 网站统计
+- [ ] 文章、页面访问统计
+- [ ] github登录发表评论
+- [ ] rss
+- [ ] 定时备份系统数据
+- [ ] 邮箱订阅功能
 ## 安装部署
 ```
 go get -u -v github.com/wangsongyan/wblog
