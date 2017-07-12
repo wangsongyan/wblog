@@ -36,12 +36,14 @@ func Upload(c *gin.Context) {
 		key, err = uploadFile(file)
 		if err == nil {
 			c.JSON(http.StatusOK, gin.H{
-				"url": system.GetConfiguration().QiniuFileServer + key,
+				"succeed": true,
+				"url":     system.GetConfiguration().QiniuFileServer + key,
 			})
 			return
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{
+		"succeed": false,
 		"message": err.Error(),
 	})
 }
