@@ -76,20 +76,20 @@ func PageUpdate(c *gin.Context) {
 }
 
 func PageDelete(c *gin.Context) {
-	id := c.PostForm("id")
+	id := c.Param("id")
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
 		page := &models.Page{}
 		page.ID = uint(pid)
 		page.Delete()
 		if err == nil {
-			c.Redirect(http.StatusMovedPermanently, "/admin/page")
-		} else {
-			// TODO
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": true,
+			})
+			return
 		}
-	} else {
-		c.AbortWithError(http.StatusInternalServerError, err)
 	}
+	c.AbortWithError(http.StatusInternalServerError, err)
 }
 
 func PageIndex(c *gin.Context) {

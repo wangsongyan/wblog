@@ -79,7 +79,7 @@
                                 <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
                                 <td>{{dateFormat .UpdatedAt "06-01-02 15:04"}}</td>
                                 <td><a href="/admin/post/{{.ID}}/edit" target="_blank" class="btn btn-primary">编辑</a>
-                                <a href="#" class="btn btn-danger">删除</a>
+                                    <a href="#" class="btn btn-danger" data-href="/admin/post/{{.ID}}/delete" data-toggle="modal" data-target="#confirm-delete">删除</a>
                                 </td>
                             </tr>
                             {{end}}
@@ -101,6 +101,23 @@
 </div>
 <!-- ./wrapper -->
 
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                请确认
+            </div>
+            <div class="modal-body">
+                确认删除该记录吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <a class="btn btn-danger btn-ok">删除记录</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- jQuery 3 -->
 <script src="/static/libs/jquery/jquery.min.js"></script>
 <!-- Bootstrap 3.3.7 -->
@@ -113,7 +130,6 @@
 <!-- page script -->
 <script>
     $(function () {
-        $('#example1').DataTable()
         $('#example2').DataTable({
             'paging'      : true,
             'lengthChange': false,
@@ -121,8 +137,17 @@
             'ordering'    : true,
             'info'        : true,
             'autoWidth'   : false
-        })
-    })
+        });
+    });
+
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').click(function(){
+            $.post($(e.relatedTarget).data('href'),{},function(reuslt){
+                window.location.href = window.location.href;
+            },'json');
+
+        });
+    });
 </script>
 </body>
 </html>

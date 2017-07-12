@@ -45,6 +45,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
 
+    <!-- InlineAttachment -->
+    <script src="/static/libs/InlineAttachment/inline-attachment.js"></script>
+    <script src="/static/libs/InlineAttachment/codemirror-4.inline-attachment.js"></script>
+
     <script>
         $(document).ready(function () {
             var simplemde = new SimpleMDE({
@@ -61,6 +65,29 @@
                 },
                 showIcons: ["code"],
                 status: false,
+            });
+
+            // inlineAttachment
+            inlineAttachment.editors.codemirror4.attach(simplemde.codemirror, {
+                uploadUrl: "/admin/upload",
+                jsonFieldName:"url",
+                onFileUploadResponse: function(xhr) {
+                    var result = JSON.parse(xhr.responseText),
+                        filename = result[this.settings.jsonFieldName];
+
+                    if (result && filename) {
+                        var newValue;
+                        if (typeof this.settings.urlText === 'function') {
+                            newValue = this.settings.urlText.call(this, filename, result);
+                        } else {
+                            newValue = this.settings.urlText.replace(this.filenameTag, filename);
+                        }
+                        var text = this.editor.getValue().replace(this.lastValue, newValue);
+                        this.editor.setValue(text);
+                        this.settings.onFileUploaded.call(this, filename);
+                    }
+                    return false;
+                }
             });
 
             $('#postSave').click(function(event){

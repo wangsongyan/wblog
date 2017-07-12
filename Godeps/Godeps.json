@@ -151,6 +151,63 @@
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/api",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/auth/qbox",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/conf",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/kodo",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/kodocli",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/bytes.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/bytes.v7/seekable",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/ctype.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/log.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/reqid.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/rpc.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/url.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/xlog.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
 		}
 	]
 }

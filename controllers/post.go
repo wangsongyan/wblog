@@ -91,7 +91,7 @@ func PostUpdate(c *gin.Context) {
 		err = post.Update()
 		if err == nil {
 			// 删除tag
-			models.DeletePostTagByPostId(id)
+			models.DeletePostTagByPostId(post.ID)
 			// 添加tag
 			if len(tags) > 0 {
 				tagArr := strings.Split(tags, ",")
@@ -119,16 +119,21 @@ func PostUpdate(c *gin.Context) {
 }
 
 func PostDelete(c *gin.Context) {
-	id := c.PostForm("id")
+	id := c.Param("id")
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
 		post := &models.Post{}
 		post.ID = uint(pid)
-		post.Delete()
-		c.Redirect(http.StatusMovedPermanently, "/admin/post")
-	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		err = post.Delete()
+		if err == nil {
+			models.DeletePostTagByPostId(uint(pid))
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": true,
+			})
+			return
+		}
 	}
+	c.AbortWithStatus(http.StatusInternalServerError)
 }
 
 func PostIndex(c *gin.Context) {
