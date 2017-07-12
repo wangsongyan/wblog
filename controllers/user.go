@@ -9,19 +9,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
-
-var oauthCfg = &oauth.Config{
-	ClientId:     "25784931c6a043de301e",
-	ClientSecret: "",
-	AuthURL:      "https://github.com/login/oauth/authorize?client_id=%s&scope=user:email",
-	TokenURL:     "https://github.com/login/oauth/access_token",
-	RedirectURL:  "http://localhost:8090/oauth2callback",
-	Scope:        "",
-}
 
 func SigninGet(c *gin.Context) {
 	/*session := sessions.Default(c)
@@ -33,7 +25,7 @@ func SigninGet(c *gin.Context) {
 		})
 	}*/
 	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-		"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
+		"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
 	})
 }
 
@@ -87,7 +79,6 @@ func SigninPost(c *gin.Context) {
 		if err == nil && user.Password == helpers.Md5(username+password) {
 			s := sessions.Default(c)
 			s.Set("UserID", user.ID)
-			//s.Set("User", user)
 			s.Save()
 			if user.IsAdmin {
 				c.Redirect(http.StatusMovedPermanently, "/admin/index")
@@ -108,7 +99,13 @@ func SigninPost(c *gin.Context) {
 
 func Oauth2Callback(c *gin.Context) {
 	code := c.Query("code")
-	t := &oauth.Transport{Config: oauthCfg}
+	t := &oauth.Transport{Config: &oauth.Config{
+		ClientId:     system.GetConfiguration().GithubClientId,
+		ClientSecret: system.GetConfiguration().GithubClientSecret,
+		RedirectURL:  system.GetConfiguration().GithubRedirectURL,
+		TokenURL:     system.GetConfiguration().GithubTokenUrl,
+		Scope:        system.GetConfiguration().GithubScope,
+	}}
 	// Exchange the received code for a token
 	tok, err := t.Exchange(code)
 	if err == nil {
@@ -116,7 +113,7 @@ func Oauth2Callback(c *gin.Context) {
 
 		err := tokenCache.PutToken(tok)
 		if err != nil {
-			log.Fatal("Cache write:", err)
+			log.Println("Cache write:", err)
 		}
 		log.Printf("Token is cached in %v\n", tokenCache)
 		token := tok.AccessToken
@@ -171,7 +168,7 @@ func Oauth2Callback(c *gin.Context) {
 			}
 		}
 	} else {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	c.Redirect(http.StatusMovedPermanently, "/signin")
 
@@ -182,11 +179,7 @@ func ProfileGet(c *gin.Context) {
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":    sessionUser,
-			"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "login first please",
+			"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
 		})
 	}
 }

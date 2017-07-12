@@ -1,10 +1,16 @@
 signup_enabled: true
-qiniu_accesskey:
-qiniu_secretkey:
-qiniu_fileserver:
-qiniu_bucket:
-github_appkey:
-github_appsecret:
+# upload image
+qiniu_accesskey: need
+qiniu_secretkey: need
+qiniu_fileserver: need
+qiniu_bucket: need
+# auth of github
+github_clientid: need
+github_clientsecret: need
+github_authurl: https://github.com/login/oauth/authorize?client_id=%s&scope=user:email
+github_redirecturl: http://localhost:8090/oauth2callback
+github_tokenurl: https://github.com/login/oauth/access_token
+github_scope:
 smtp_username:
 smtp_password:
 smtp_host:
