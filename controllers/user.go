@@ -48,6 +48,7 @@ func SignupPost(c *gin.Context) {
 		Email:     email,
 		Telephone: telephone,
 		Password:  password,
+		IsAdmin:   true,
 	}
 	var err error
 	if len(user.Email) == 0 /*|| len(user.Telephone) == 0 */ || len(user.Password) == 0 {
