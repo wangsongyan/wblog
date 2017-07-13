@@ -57,15 +57,16 @@ func SignupPost(c *gin.Context) {
 		user.Password = helpers.Md5(user.Email + user.Password)
 		err = user.Insert()
 		if err == nil {
-			c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-				"user": user,
+			c.JSON(http.StatusOK, gin.H{
+				"succeed": true,
 			})
 			return
 		} else {
 			err = errors.New("email already exists.")
 		}
 	}
-	c.HTML(http.StatusOK, "auth/signup.html", gin.H{
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": false,
 		"message": err.Error(),
 	})
 }
