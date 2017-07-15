@@ -58,7 +58,7 @@
             <div class="articleBody">
                 {{$length := len $postvalue.Body}}
                 {{if ge $length 100}}
-                    {{substring $postvalue.Body 0 100}}...
+                    {{truncate $postvalue.Body 100}}...
                 {{else}}
                     {{$postvalue.Body}}
                 {{end}}

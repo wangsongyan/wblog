@@ -100,6 +100,7 @@ func setTemplate(engine *gin.Engine) {
 		"substring":  helpers.Substring,
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
+		"truncate":   helpers.Truncate,
 	}
 
 	if gin.IsDebugging() {
