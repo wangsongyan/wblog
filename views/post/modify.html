@@ -49,6 +49,10 @@
     <script src="/static/libs/InlineAttachment/inline-attachment.js"></script>
     <script src="/static/libs/InlineAttachment/codemirror-4.inline-attachment.js"></script>
 
+    <!-- bootstrap-switch -->
+    <link href="/static/libs/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet"/>
+    <script src="/static/libs/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+
     <script>
         $(document).ready(function () {
             var simplemde = new SimpleMDE({
@@ -118,6 +122,11 @@
                 }
             });
 
+            $('#switchbtn').bootstrapSwitch({
+                onText:'公开',
+                offText:'不公开',
+            });
+
         });
 
         function deleteTag(element){
@@ -168,6 +177,9 @@
             <input id="tags" name="tags" type="hidden">
             <input name="title" type="text" class="form-control" placeholder="Title" value="{{.post.Title}}"/><br/>
             <textarea id="demo" name="body">{{.post.Body}}</textarea><br/>
+            <div class="bootstrap-switch-small">
+                <input id="switchbtn" name="isPublished" type="checkbox" {{if .post.IsPublished}}checked{{end}} />
+            </div>
         </form>
     </div>
 

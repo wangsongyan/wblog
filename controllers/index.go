@@ -10,7 +10,7 @@ import (
 )
 
 func IndexGet(c *gin.Context) {
-	posts, err := models.ListPost("")
+	posts, err := models.ListPublishedPost("")
 	if err == nil {
 		policy := bluemonday.StrictPolicy()
 		for _, post := range posts {

@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/jinzhu/gorm"
 	//_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/microcosm-cc/bluemonday"
@@ -26,7 +27,7 @@ type Page struct {
 	Title       string // title
 	Body        string // body
 	View        int    // view count
-	IsPublished string // published or not
+	IsPublished bool   // published or not
 }
 
 // table posts
@@ -35,7 +36,7 @@ type Post struct {
 	Title       string     // title
 	Body        string     // body
 	View        int        // view count
-	IsPublished string     // published or not
+	IsPublished bool       // published or not
 	Tags        []*Tag     `gorm:"-"` // tags of post
 	Comments    []*Comment `gorm:"-"` // comments of post
 }
@@ -96,6 +97,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
+	db.LogMode(true)
 	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
@@ -108,7 +110,7 @@ func (page *Page) Insert() error {
 }
 
 func (page *Page) Update() error {
-	return DB.Model(page).Update(Page{Title: page.Title, Body: page.Body, IsPublished: page.IsPublished}).Error
+	return DB.Model(page).Updates(map[string]interface{}{"title": page.Title, "body": page.Body, "is_published": page.IsPublished}).Error
 }
 
 func (page *Page) Delete() error {
@@ -124,10 +126,18 @@ func GetPageById(id string) (*Page, error) {
 	err = DB.First(&page, "id = ?", pid).Error
 	return &page, err
 }
+func ListPublishedPage() ([]*Page, error) {
+	return ListPage(true)
+}
 
-func ListPage() ([]*Page, error) {
+func ListPage(published bool) ([]*Page, error) {
 	var pages []*Page
-	err := DB.Find(&pages).Error
+	var err error
+	if published {
+		err = DB.Where("is_published = ?", true).Find(&pages).Error
+	} else {
+		err = DB.Find(&pages).Error
+	}
 	return pages, err
 }
 
@@ -143,9 +153,7 @@ func (post *Post) Insert() error {
 }
 
 func (post *Post) Update() error {
-	p := Post{Title: post.Title}
-	p.Body = post.Body
-	return DB.Model(post).Update(p).Error
+	return DB.Model(post).Updates(map[string]interface{}{"title": post.Title, "body": post.Body, "is_published": post.IsPublished}).Error
 }
 
 func (post *Post) Delete() error {
@@ -160,7 +168,11 @@ func (post *Post) Excerpt() template.HTML {
 	return excerpt
 }
 
-func ListPost(tag string) ([]*Post, error) {
+func ListPublishedPost(tag string) ([]*Post, error) {
+	return ListPost(tag, true)
+}
+
+func ListPost(tag string, published bool) ([]*Post, error) {
 	var posts []*Post
 	var err error
 	if len(tag) > 0 {
@@ -168,7 +180,12 @@ func ListPost(tag string) ([]*Post, error) {
 		if err != nil {
 			return nil, err
 		}
-		rows, err := DB.Raw("select p.* from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ? order by created_at desc", tagId).Rows()
+		var rows *sql.Rows
+		if published {
+			rows, err = DB.Raw("select p.* from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ? and p.is_published = ? order by created_at desc", tagId, true).Rows()
+		} else {
+			rows, err = DB.Raw("select p.* from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ? order by created_at desc", tagId).Rows()
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -179,7 +196,11 @@ func ListPost(tag string) ([]*Post, error) {
 			posts = append(posts, &post)
 		}
 	} else {
-		err = DB.Order("created_at desc").Find(&posts).Error
+		if published {
+			err = DB.Where("is_published = ?", true).Order("created_at desc").Find(&posts).Error
+		} else {
+			err = DB.Order("created_at desc").Find(&posts).Error
+		}
 	}
 	return posts, err
 }
@@ -207,8 +228,8 @@ func MustListPostArchives() []*QrArchive {
 
 func ListPostArchives() ([]*QrArchive, error) {
 	var archives []*QrArchive
-	sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts group by month order by month desc`
-	rows, err := DB.Raw(sql).Rows()
+	sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	rows, err := DB.Raw(sql, true).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +252,7 @@ func ListPostByArchive(year, month string) ([]*Post, error) {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
-	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ? order by created_at desc", condition).Rows()
+	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc", condition, true).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +273,7 @@ func (tag *Tag) Insert() error {
 
 func ListTag() ([]*Tag, error) {
 	var tags []*Tag
-	rows, err := DB.Raw("select t.*,count(*) total from tags t inner join post_tags pt on t.id = pt.tag_id group by pt.tag_id").Rows()
+	rows, err := DB.Raw("select t.*,count(*) total from tags t inner join post_tags pt on t.id = pt.tag_id inner join posts p on pt.post_id = p.id where p.is_published = ? group by pt.tag_id", true).Rows()
 	if err != nil {
 		return nil, err
 	}

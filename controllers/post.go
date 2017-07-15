@@ -11,7 +11,7 @@ import (
 func PostGet(c *gin.Context) {
 	id := c.Param("id")
 	post, err := models.GetPostById(id)
-	if err == nil {
+	if err == nil && post.IsPublished {
 		post.Tags, _ = models.ListTagByPostId(id)
 		post.Comments, _ = models.ListCommentByPostID(id)
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
@@ -31,11 +31,12 @@ func PostCreate(c *gin.Context) {
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
+	published := "on" == isPublished
 
 	post := &models.Post{
 		Title:       title,
 		Body:        body,
-		IsPublished: isPublished,
+		IsPublished: published,
 	}
 	err := post.Insert()
 	if err == nil {
@@ -80,12 +81,14 @@ func PostUpdate(c *gin.Context) {
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
+	published := "on" == isPublished
+
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
 		post := &models.Post{
 			Title:       title,
 			Body:        body,
-			IsPublished: isPublished,
+			IsPublished: published,
 		}
 		post.ID = uint(pid)
 		err = post.Update()
@@ -118,6 +121,18 @@ func PostUpdate(c *gin.Context) {
 	}
 }
 
+func PostPublish(c *gin.Context) {
+	id := c.Param("id")
+	post, err := models.GetPostById(id)
+	if err == nil {
+		post.IsPublished = !post.IsPublished
+		err = post.Update()
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": err == nil,
+	})
+}
+
 func PostDelete(c *gin.Context) {
 	id := c.Param("id")
 	pid, err := strconv.ParseUint(id, 10, 64)
@@ -137,7 +152,7 @@ func PostDelete(c *gin.Context) {
 }
 
 func PostIndex(c *gin.Context) {
-	posts, _ := models.ListPost("")
+	posts, _ := models.ListPost("", false)
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":  posts,

@@ -26,7 +26,7 @@ func TagCreate(c *gin.Context) {
 
 func TagGet(c *gin.Context) {
 	id := c.Param("id")
-	posts, err := models.ListPost(id)
+	posts, err := models.ListPublishedPost(id)
 	if err == nil {
 		policy := bluemonday.StrictPolicy()
 		for _, post := range posts {

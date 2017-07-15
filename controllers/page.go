@@ -10,7 +10,7 @@ import (
 func PageGet(c *gin.Context) {
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
-	if err == nil {
+	if err == nil && page.IsPublished {
 		c.HTML(http.StatusOK, "page/display.html", gin.H{
 			"page": page,
 		})
@@ -27,10 +27,11 @@ func PageCreate(c *gin.Context) {
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
+	published := "on" == isPublished
 	page := &models.Page{
 		Title:       title,
 		Body:        body,
-		IsPublished: isPublished,
+		IsPublished: published,
 	}
 	err := page.Insert()
 	if err == nil {
@@ -60,9 +61,10 @@ func PageUpdate(c *gin.Context) {
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
+	published := "on" == isPublished
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
-		page := &models.Page{Title: title, Body: body, IsPublished: isPublished}
+		page := &models.Page{Title: title, Body: body, IsPublished: published}
 		page.ID = uint(pid)
 		err = page.Update()
 		if err == nil {
@@ -73,6 +75,18 @@ func PageUpdate(c *gin.Context) {
 	} else {
 		c.AbortWithError(http.StatusInternalServerError, err)
 	}
+}
+
+func PagePublish(c *gin.Context) {
+	id := c.Param("id")
+	page, err := models.GetPageById(id)
+	if err == nil {
+		page.IsPublished = !page.IsPublished
+		err = page.Update()
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": err == nil,
+	})
 }
 
 func PageDelete(c *gin.Context) {
@@ -93,7 +107,7 @@ func PageDelete(c *gin.Context) {
 }
 
 func PageIndex(c *gin.Context) {
-	pages, _ := models.ListPage()
+	pages, _ := models.ListPage(false)
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/page.html", gin.H{
 		"pages": pages,
