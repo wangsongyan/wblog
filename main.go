@@ -31,6 +31,7 @@ func main() {
 	router.NoRoute(controllers.Handle404)
 	router.GET("/", controllers.IndexGet)
 	router.GET("/index", controllers.IndexGet)
+	router.GET("/rss", controllers.RssGet)
 
 	if system.GetConfiguration().SignupEnabled {
 		router.GET("/signup", controllers.SignupGet)

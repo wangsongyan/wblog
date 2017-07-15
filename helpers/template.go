@@ -1,19 +1,8 @@
 package helpers
 
 import (
-	"github.com/wangsongyan/wblog/models"
 	"time"
 )
-
-func ListTag() []*models.Tag {
-	tags, _ := models.ListTag()
-	return tags
-}
-
-func ListArchive() []*models.QrArchive {
-	archievs, _ := models.ListPostArchives()
-	return archievs
-}
 
 // 格式化时间
 func DateFormat(date time.Time, layout string) string {

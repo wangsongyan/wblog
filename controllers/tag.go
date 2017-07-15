@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"
@@ -32,8 +31,8 @@ func TagGet(c *gin.Context) {
 		}
 		c.HTML(http.StatusOK, "index/index.html", gin.H{
 			"posts":    posts,
-			"tags":     helpers.ListTag(),
-			"archives": helpers.ListArchive(),
+			"tags":     models.MustListTag(),
+			"archives": models.MustListPostArchives(),
 		})
 	} else {
 		c.AbortWithStatus(http.StatusInternalServerError)

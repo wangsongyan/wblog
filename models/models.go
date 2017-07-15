@@ -5,6 +5,10 @@ import (
 	//_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday"
+	"github.com/wangsongyan/wblog/helpers"
+	"html/template"
 	"strconv"
 	"time"
 )
@@ -148,6 +152,14 @@ func (post *Post) Delete() error {
 	return DB.Delete(post).Error
 }
 
+func (post *Post) Excerpt() template.HTML {
+	//you can sanitize, cut it down, add images, etc
+	policy := bluemonday.StrictPolicy() //remove all html tags
+	sanitized := policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
+	excerpt := template.HTML(helpers.Truncate(sanitized, 300) + "...")
+	return excerpt
+}
+
 func ListPost(tag string) ([]*Post, error) {
 	var posts []*Post
 	var err error
@@ -186,6 +198,11 @@ func GetPostById(id string) (*Post, error) {
 	var post Post
 	err = DB.First(&post, "id = ?", pid).Error
 	return &post, err
+}
+
+func MustListPostArchives() []*QrArchive {
+	archives, _ := ListPostArchives()
+	return archives
 }
 
 func ListPostArchives() ([]*QrArchive, error) {
@@ -246,6 +263,11 @@ func ListTag() ([]*Tag, error) {
 		tags = append(tags, &tag)
 	}
 	return tags, nil
+}
+
+func MustListTag() []*Tag {
+	tags, _ := ListTag()
+	return tags
 }
 
 func ListTagByPostId(id string) ([]*Tag, error) {
