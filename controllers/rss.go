@@ -21,7 +21,7 @@ func RssGet(c *gin.Context) {
 	}
 
 	feed.Items = make([]*feeds.Item, 0)
-	posts, err := models.ListPost("")
+	posts, err := models.ListPublishedPost("")
 	if err == nil {
 		for _, post := range posts {
 			item := &feeds.Item{

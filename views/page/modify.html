@@ -49,6 +49,10 @@
     <script src="/static/libs/InlineAttachment/inline-attachment.js"></script>
     <script src="/static/libs/InlineAttachment/codemirror-4.inline-attachment.js"></script>
 
+    <!-- bootstrap-switch -->
+    <link href="/static/libs/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css" rel="stylesheet"/>
+    <script src="/static/libs/bootstrap-switch/js/bootstrap-switch.min.js"></script>
+
     <script>
         $(document).ready(function () {
             var simplemde = new SimpleMDE({
@@ -96,6 +100,11 @@
                 $("#pageForm").submit();
             });
 
+            $('#switchbtn').bootstrapSwitch({
+                onText:'公开',
+                offText:'不公开',
+            });
+
         });
     </script>
 
@@ -120,6 +129,9 @@
         <form action="/admin/page/{{.page.ID}}/edit" method="post" id="pageForm" class="form-group">
             <input name="title" type="text" class="form-control" placeholder="Title" value="{{.page.Title}}"/><br/>
             <textarea id="demo" name="body">{{.page.Body}}</textarea><br/>
+            <div class="bootstrap-switch-small">
+                <input id="switchbtn" name="isPublished" type="checkbox" {{if .page.IsPublished}}checked{{end}} />
+            </div>
         </form>
     </div>
 

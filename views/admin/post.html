@@ -66,6 +66,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>标题</th>
+                                <th>公开</th>
                                 <th>创建时间</th>
                                 <th>更新时间</th>
                                 <th>操作</th>
@@ -76,6 +77,9 @@
                             <tr>
                                 <td>{{.ID}}</td>
                                 <td><a href="/post/{{.ID}}" target="_blank">{{.Title}}</a></td>
+                                <td>
+                                    <a href="javascript:void(0);" onclick="pushlish('{{.ID}}')"> {{if .IsPublished}}√{{else}}×{{end}}</a>
+                                </td>
                                 <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
                                 <td>{{dateFormat .UpdatedAt "06-01-02 15:04"}}</td>
                                 <td><a href="/admin/post/{{.ID}}/edit" target="_blank" class="btn btn-primary">编辑</a>
@@ -139,6 +143,15 @@
             'autoWidth'   : false
         });
     });
+
+    function pushlish(id){
+        $.post("/admin/post/"+id+"/publish",{},function(result){
+            console.log(result);
+            if(result.succeed){
+                window.location.href = window.location.href;
+            }
+        },"json")
+    }
 
     $('#confirm-delete').on('show.bs.modal', function(e) {
         $(this).find('.btn-ok').click(function(){

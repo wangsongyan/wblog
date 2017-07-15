@@ -28,7 +28,7 @@ func main() {
 	router.Use(SharedData())
 
 	//Periodic tasks
-	gocron.Every(1).Minute().Do(system.CreateXMLSitemap)
+	gocron.Every(1).Day().Do(system.CreateXMLSitemap)
 	gocron.Start()
 
 	router.Static("/static", "./static")
@@ -71,6 +71,7 @@ func main() {
 		authorized.POST("/new_page", controllers.PageCreate)
 		authorized.GET("/page/:id/edit", controllers.PageEdit)
 		authorized.POST("/page/:id/edit", controllers.PageUpdate)
+		authorized.POST("/page/:id/publish", controllers.PagePublish)
 		authorized.POST("/page/:id/delete", controllers.PageDelete)
 
 		// post
@@ -79,6 +80,7 @@ func main() {
 		authorized.POST("/new_post", controllers.PostCreate)
 		authorized.GET("/post/:id/edit", controllers.PostEdit)
 		authorized.POST("/post/:id/edit", controllers.PostUpdate)
+		authorized.POST("/post/:id/publish", controllers.PostPublish)
 		authorized.POST("/post/:id/delete", controllers.PostDelete)
 
 		// tag
