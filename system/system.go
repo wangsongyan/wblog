@@ -23,6 +23,7 @@ type Configuration struct {
 	SmtpHost           string `yaml:"smtp_host"`      //host
 	SessionSecret      string `yaml:"session_secret"` //session_secret
 	Domain             string `yaml:"domain"`         //domain
+	Public             string `yaml:"public"`         //public
 }
 
 var configuration *Configuration

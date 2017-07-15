@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
+	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/controllers"
@@ -25,6 +26,10 @@ func main() {
 	setTemplate(router)
 	setSessions(router)
 	router.Use(SharedData())
+
+	//Periodic tasks
+	gocron.Every(1).Minute().Do(system.CreateXMLSitemap)
+	gocron.Start()
 
 	router.Static("/static", "./static")
 
