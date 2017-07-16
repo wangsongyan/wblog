@@ -39,6 +39,7 @@
 - [x] rss
 - [ ] 定时备份系统数据
 - [x] 邮箱订阅功能
+
 ## 安装部署
 ```
 go get -u -v github.com/wangsongyan/wblog
