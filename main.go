@@ -52,6 +52,7 @@ func main() {
 	router.POST("/comment/:id/delete", controllers.CommentDelete)
 
 	// subscriber
+	router.GET("/subscribe", controllers.SubscribeGet)
 	router.POST("/subscribe", controllers.Subscribe)
 	router.GET("/active", controllers.ActiveSubsciber)
 	router.GET("/unsubscribe", controllers.UnSubscribe)
@@ -61,7 +62,7 @@ func main() {
 	router.GET("/tag/:id", controllers.TagGet)
 	router.GET("/archives/:year/:month", controllers.ArchiveGet)
 
-	router.GET("/link", controllers.LinkGet)
+	router.GET("/link/:id", controllers.LinkGet)
 
 	authorized := router.Group("/admin")
 	authorized.Use(AuthRequired())
@@ -110,7 +111,8 @@ func main() {
 		// link
 		authorized.GET("/link", controllers.LinkIndex)
 		authorized.POST("/new_link", controllers.LinkCreate)
-		authorized.POST("/link/:id", controllers.LinkUpdate)
+		authorized.POST("/link/:id/edit", controllers.LinkUpdate)
+		authorized.POST("/link/:id/delete", controllers.LinkDelete)
 	}
 
 	router.Run(":8090")

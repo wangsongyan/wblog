@@ -11,41 +11,65 @@ import (
 	"time"
 )
 
+func SubscribeGet(c *gin.Context) {
+	c.HTML(http.StatusOK, "other/subscribe.html", nil)
+}
+
 func Subscribe(c *gin.Context) {
 	mail := c.PostForm("mail")
-	subscriber, err := models.GetSubscriberByEmail(mail)
-	if err == nil {
-		if !subscriber.VerifyState && time.Now().After(subscriber.OutTime) {
-			uuid := helpers.UUID()
-			duration, _ := time.ParseDuration("30m")
-			subscriber.OutTime = time.Now().Add(duration)
-			subscriber.SecretKey = uuid
-			signature := helpers.Md5(mail + uuid + subscriber.OutTime.Format("20060102150405"))
-			subscriber.Signature = signature
-			if err := sendMail(mail, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", "http://localhost:8090", signature)); err == nil {
-				subscriber.Update()
+	var err error
+	if len(mail) > 0 {
+		var subscriber *models.Subscriber
+		subscriber, err = models.GetSubscriberByEmail(mail)
+		if err == nil {
+			if !subscriber.VerifyState && time.Now().After(subscriber.OutTime) {
+				uuid := helpers.UUID()
+				duration, _ := time.ParseDuration("30m")
+				subscriber.OutTime = time.Now().Add(duration)
+				subscriber.SecretKey = uuid
+				signature := helpers.Md5(mail + uuid + subscriber.OutTime.Format("20060102150405"))
+				subscriber.Signature = signature
+				if err = sendMail(mail, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", "http://localhost:8090", signature)); err == nil {
+					err = subscriber.Update()
+					if err == nil {
+						c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
+							"message": "subscribe succeed.",
+						})
+						return
+					}
+				}
+			} else {
+				err = errors.New("mail have already actived or have unactive mail in your mailbox.")
+			}
+		} else {
+			subscriber := &models.Subscriber{
+				Email: mail,
+			}
+			err = subscriber.Insert()
+			if err == nil {
+				uuid := helpers.UUID()
+				duration, _ := time.ParseDuration("30m")
+				subscriber.OutTime = time.Now().Add(duration)
+				subscriber.SecretKey = uuid
+				signature := helpers.Md5(mail + uuid + subscriber.OutTime.Format("20060102150405"))
+				subscriber.Signature = signature
+				if err = sendMail(mail, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", "http://localhost:8090", signature)); err == nil {
+					err = subscriber.Update()
+					if err == nil {
+						c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
+							"message": "subscribe succeed.",
+						})
+						return
+					}
+				}
 			}
 		}
 	} else {
-		subscriber := &models.Subscriber{
-			Email: mail,
-		}
-		err := subscriber.Insert()
-		if err == nil {
-			uuid := helpers.UUID()
-			duration, _ := time.ParseDuration("30m")
-			subscriber.OutTime = time.Now().Add(duration)
-			subscriber.SecretKey = uuid
-			signature := helpers.Md5(mail + uuid + subscriber.OutTime.Format("20060102150405"))
-			subscriber.Signature = signature
-			if err := sendMail(mail, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", "http://localhost:8090", signature)); err == nil {
-				subscriber.Update()
-			}
-		}
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": err == nil,
-		})
+		err = errors.New("empty mail address.")
 	}
+	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
+		"message": err.Error(),
+	})
 }
 
 func ActiveSubsciber(c *gin.Context) {
@@ -55,6 +79,7 @@ func ActiveSubsciber(c *gin.Context) {
 		if err == nil {
 			if time.Now().Before(subscriber.OutTime) {
 				subscriber.VerifyState = true
+				subscriber.OutTime = time.Now()
 				err = subscriber.Update()
 				if err == nil {
 					HandleMessage(c, "激活成功！")

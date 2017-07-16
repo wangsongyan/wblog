@@ -96,6 +96,7 @@ type Link struct {
 	Name string //名称
 	Url  string //地址
 	Sort int    `gorm:"default:'0'"` //排序
+	View int    //访问次数
 }
 
 // query result
@@ -116,7 +117,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	//db.LogMode(true)
+	db.LogMode(true)
 	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
@@ -425,7 +426,7 @@ func CountComment() int {
 
 // Subscriber
 func (s *Subscriber) Insert() error {
-	return DB.FirstOrCreate(s, "email = ?", s.ID).Error
+	return DB.FirstOrCreate(s, "email = ?", s.Email).Error
 }
 
 func (s *Subscriber) Update() error {
@@ -462,7 +463,7 @@ func GetSubscriberBySignature(key string) (*Subscriber, error) {
 
 // Link
 func (link *Link) Insert() error {
-	return DB.Model(&Link{}).Create(link).Error
+	return DB.FirstOrCreate(link, "url = ?", link.Url).Error
 }
 
 func (link *Link) Update() error {
@@ -475,6 +476,23 @@ func (link *Link) Delete() error {
 
 func ListLinks() ([]*Link, error) {
 	var links []*Link
-	err := DB.Find(&links).Error
+	err := DB.Order("sort asc").Find(&links).Error
 	return links, err
+}
+
+func MustListLinks() []*Link {
+	links, _ := ListLinks()
+	return links
+}
+
+func GetLinkById(id uint) (*Link, error) {
+	var link Link
+	err := DB.FirstOrCreate(&link, "id = ?", id).Error
+	return &link, err
+}
+
+func GetLinkByUrl(url string) (*Link, error) {
+	var link Link
+	err := DB.Find(&link, "url = ?", url).Error
+	return &link, err
 }

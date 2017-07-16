@@ -1,0 +1,208 @@
+{{define "admin/link.html"}}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Wlog - Link</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" href="/static/libs/bootstrap/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/libs/font-awesome/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/libs/Ionicons/css/ionicons.min.css">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="/static/libs/datatables.net-bs/css/dataTables.bootstrap.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/libs/AdminLTE/css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+         folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="/static/libs/AdminLTE/css/skins/_all-skins.min.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    {{template "admin/navbar.html" .}}
+    {{template "admin/sidebar.html" .}}
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+            <h1>
+                <small>友链管理<a class="btn btn-primary" href="javascript:void(0);" data-href="/admin/new_link" data-toggle="modal" data-target="#add-dialog"><span class="glyphicon glyphicon-plus"></span>新增</a></small>
+            </h1>
+            <ol class="breadcrumb">
+                <li><a href="/admin/index"><i class="fa fa-dashboard"></i> Home</a></li>
+                <li class="active"><a href="#">友链管理</a></li>
+            </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="box">
+                        <!--<div class="box-header">
+                            <h3 class="box-title">Hover Data Table</h3>
+                        </div>
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <table id="example2" class="table table-bordered table-hover">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>名称</th>
+                                    <th>链接</th>
+                                    <th>排序</th>
+                                    <th>访问次数</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {{range .links}}
+                                <tr>
+                                    <td>{{.ID}}</td>
+                                    <td>{{.Name}}</td>
+                                    <td>{{.Url}}</td>
+                                    <td>{{.Sort}}</td>
+                                    <td>{{.View}}</td>
+                                    <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
+                                    <td><a id="editrow" href="javascript:void(0);" class="btn btn-primary" data-href="/admin/link/{{.ID}}/edit" data-toggle="modal" data-target="#add-dialog">编辑</a>
+                                        <a href="javascript:void(0);" class="btn btn-danger" data-href="/admin/link/{{.ID}}/delete" data-toggle="modal" data-target="#confirm-delete">删除</a>
+                                    </td>
+                                </tr>
+                                {{end}}
+                                </tfoot>
+                            </table>
+                        </div>
+                        <!-- /.box-body -->
+                    </div>
+                    <!-- /.box -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!-- /.row -->
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+</div>
+<!-- ./wrapper -->
+
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                请确认
+            </div>
+            <div class="modal-body">
+                确认删除该记录吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <a class="btn btn-danger btn-ok">删除记录</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="add-dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                新增或添加
+            </div>
+            <div class="modal-body">
+                <form id="add-form" class="form-inline">
+                    <input name="id" type="hidden">
+                    <div class="form-group">
+                        <label class="sr-only" for="nameInput">名称</label>
+                        <input type="text" name="name" class="form-control" id="nameInput" placeholder="名称">
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="urlInput">链接</label>
+                        <input type="text" name="url" class="form-control" id="urlInput" placeholder="链接">
+                    </div>
+                    <div class="form-group">
+                        <label class="sr-only" for="urlSort">排序</label>
+                        <input type="text" name="sort" class="form-control" id="urlSort" placeholder="排序">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <a class="btn btn-primary btn-save">保存</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery 3 -->
+<script src="/static/libs/jquery/jquery.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="/static/libs/bootstrap/js/bootstrap.min.js"></script>
+<!-- DataTables -->
+<script src="/static/libs/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="/static/libs/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/static/libs/AdminLTE/js/adminlte.min.js"></script>
+<!-- page script -->
+<script>
+    $(function () {
+        $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : false,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false
+        });
+    });
+
+    $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').click(function(){
+            $.post($(e.relatedTarget).data('href'),{},function(reuslt){
+                window.location.href = window.location.href;
+            },'json');
+
+        });
+    });
+
+    $('#add-dialog').on('show.bs.modal', function(e) {
+        $(':input','#add-form').val('')
+        var data = $('#example2').DataTable().row( $(e.relatedTarget).parents('tr') ).data();
+        console.log(data);
+        if(data){
+            var fields = $("#add-form").serializeArray();
+            $.each( fields, function(i, field){
+                //jquery根据name属性查找
+                $(":input[name='"+field.name+"']").val(data[i]);
+            });
+        }
+        $(this).find('.btn-save').unbind("click"); //移除click
+        $(this).find('.btn-save').click(function(){
+            $.post($(e.relatedTarget).data('href'),$('#add-form').serialize(),function(result){
+                window.location.href = window.location.href;
+            },'json')
+        });
+    });
+</script>
+</body>
+</html>
+{{end}}
