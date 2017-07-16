@@ -117,7 +117,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	db.LogMode(true)
+	//db.LogMode(true)
 	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
@@ -130,7 +130,12 @@ func (page *Page) Insert() error {
 }
 
 func (page *Page) Update() error {
-	return DB.Model(page).Updates(map[string]interface{}{"title": page.Title, "body": page.Body, "is_published": page.IsPublished}).Error
+	return DB.Model(page).Updates(map[string]interface{}{
+		"title":        page.Title,
+		"body":         page.Body,
+		"is_published": page.IsPublished,
+		"view":         page.View,
+	}).Error
 }
 
 func (page *Page) Delete() error {
@@ -173,7 +178,12 @@ func (post *Post) Insert() error {
 }
 
 func (post *Post) Update() error {
-	return DB.Model(post).Updates(map[string]interface{}{"title": post.Title, "body": post.Body, "is_published": post.IsPublished}).Error
+	return DB.Model(post).Updates(map[string]interface{}{
+		"title":        post.Title,
+		"body":         post.Body,
+		"is_published": post.IsPublished,
+		"view":         post.View,
+	}).Error
 }
 
 func (post *Post) Delete() error {
