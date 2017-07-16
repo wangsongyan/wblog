@@ -21,6 +21,7 @@ func IndexGet(c *gin.Context) {
 			"posts":    posts,
 			"tags":     models.MustListTag(),
 			"archives": models.MustListPostArchives(),
+			"links":    models.MustListLinks(),
 		})
 	} else {
 		c.AbortWithStatus(http.StatusInternalServerError)

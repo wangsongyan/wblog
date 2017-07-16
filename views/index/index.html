@@ -170,6 +170,22 @@
                 <!-- /.row -->
             </div>
 
+            <div class="well">
+                <h5><span class="glyphicon glyphicon-link"></span> 友情链接</h5>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="list-unstyled">
+                            {{range .links}}
+                            <li><a href="/link/{{.ID}}" target="_blank" title="{{.Url}}">{{.Name}}</a>
+                            </li>
+                           {{end}}
+                        </ul>
+                    </div>
+                    <!-- /.col-lg-6 -->
+                </div>
+                <!-- /.row -->
+            </div>
+
         </div>
 
     </div>
