@@ -51,6 +51,11 @@ func main() {
 	router.POST("/new_comment", controllers.CommentPost)
 	router.POST("/comment/:id/delete", controllers.CommentDelete)
 
+	// subscriber
+	router.POST("/subscribe", controllers.Subscribe)
+	router.GET("/active", controllers.ActiveSubsciber)
+	router.GET("/unsubscribe", controllers.UnSubscribe)
+
 	router.GET("/page/:id", controllers.PageGet)
 	router.GET("/post/:id", controllers.PostGet)
 	router.GET("/tag/:id", controllers.TagGet)
@@ -95,6 +100,10 @@ func main() {
 		authorized.POST("/profile/email/bind", controllers.BindEmail)
 		authorized.POST("/profile/email/unbind", controllers.UnbindEmail)
 		authorized.POST("/profile/github/unbind", controllers.UnbindGithub)
+
+		// subscriber
+		authorized.GET("/subscriber", controllers.SubscriberIndex)
+		authorized.POST("/subscriber", controllers.SubscriberPost)
 	}
 
 	router.Run(":8090")

@@ -79,6 +79,17 @@ type Comment struct {
 	//Replies []*Comment // 评论
 }
 
+// table subscribe
+type Subscriber struct {
+	gorm.Model
+	Email          string    `gorm:"unique_index"` //邮箱
+	VerifyState    bool      `gorm:"default:'0'"`  //验证状态
+	SubscribeState bool      `gorm:"default:'1'"`  //订阅状态
+	OutTime        time.Time //过期时间
+	SecretKey      string    // 秘钥
+	Signature      string    //签名
+}
+
 // query result
 type QrArchive struct {
 	ArchiveDate time.Time //month
@@ -97,8 +108,8 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	db.LogMode(true)
-	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{})
+	//db.LogMode(true)
+	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
 	return db
@@ -402,4 +413,41 @@ func CountComment() int {
 	var count int
 	DB.Model(&Comment{}).Count(&count)
 	return count
+}
+
+// Subscriber
+func (s *Subscriber) Insert() error {
+	return DB.FirstOrCreate(s, "email = ?", s.ID).Error
+}
+
+func (s *Subscriber) Update() error {
+	return DB.Model(s).Update(map[string]interface{}{
+		"verify_state":    s.VerifyState,
+		"subscribe_state": s.SubscribeState,
+		"out_time":        s.OutTime,
+		"signature":       s.Signature,
+		"secret_key":      s.SecretKey,
+	}).Error
+}
+
+func ListSubscriber(invalid bool) ([]*Subscriber, error) {
+	var subscribers []*Subscriber
+	db := DB.Model(&Subscriber{})
+	if invalid {
+		db.Where("verify_state = ? and subscribe_state = ?", true, true)
+	}
+	err := db.Find(&subscribers).Error
+	return subscribers, err
+}
+
+func GetSubscriberByEmail(mail string) (*Subscriber, error) {
+	var subscriber Subscriber
+	err := DB.Find(&subscriber, "email = ?", mail).Error
+	return &subscriber, err
+}
+
+func GetSubscriberBySignature(key string) (*Subscriber, error) {
+	var subscriber Subscriber
+	err := DB.Find(&subscriber, "signature = ?", key).Error
+	return &subscriber, err
 }
