@@ -126,6 +126,7 @@ func setTemplate(engine *gin.Engine) {
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
 		"truncate":   helpers.Truncate,
+		"add":        helpers.Add,
 	}
 
 	if gin.IsDebugging() {

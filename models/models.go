@@ -449,6 +449,12 @@ func ListSubscriber(invalid bool) ([]*Subscriber, error) {
 	return subscribers, err
 }
 
+func CountSubscriber() (int, error) {
+	var count int
+	err := DB.Model(&Subscriber{}).Where("verify_state = ? and subscribe_state = ?", true, true).Count(&count).Error
+	return count, err
+}
+
 func GetSubscriberByEmail(mail string) (*Subscriber, error) {
 	var subscriber Subscriber
 	err := DB.Find(&subscriber, "email = ?", mail).Error

@@ -12,11 +12,15 @@ import (
 )
 
 func SubscribeGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "other/subscribe.html", nil)
+	count, _ := models.CountSubscriber()
+	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
+		"total": count,
+	})
 }
 
 func Subscribe(c *gin.Context) {
 	mail := c.PostForm("mail")
+	count, _ := models.CountSubscriber()
 	var err error
 	if len(mail) > 0 {
 		var subscriber *models.Subscriber
@@ -34,9 +38,16 @@ func Subscribe(c *gin.Context) {
 					if err == nil {
 						c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 							"message": "subscribe succeed.",
+							"total":   count,
 						})
 						return
 					}
+				}
+			} else if subscriber.VerifyState && !subscriber.SubscribeState { //已认证，未订阅
+				subscriber.SubscribeState = true
+				err = subscriber.Update()
+				if err == nil {
+					err = errors.New("subscribe succeed.")
 				}
 			} else {
 				err = errors.New("mail have already actived or have unactive mail in your mailbox.")
@@ -58,6 +69,7 @@ func Subscribe(c *gin.Context) {
 					if err == nil {
 						c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 							"message": "subscribe succeed.",
+							"total":   count,
 						})
 						return
 					}
@@ -69,6 +81,7 @@ func Subscribe(c *gin.Context) {
 	}
 	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 		"message": err.Error(),
+		"total":   count,
 	})
 }
 

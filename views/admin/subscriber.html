@@ -67,8 +67,8 @@
                                     <th>ID</th>
                                     <th>邮箱</th>
                                     <th>激活状态</th>
+                                    <th>订阅状态</th>
                                     <th>订阅时间</th>
-                                    <th>创建时间</th>
                                     <th>操作</th>
                                 </tr>
                                 </thead>
@@ -76,7 +76,7 @@
                                 {{range .subscribers}}
                                 <tr>
                                     <td>{{.ID}}</td>
-                                    <td><a href="/page/{{.ID}}" target="_blank">{{.Email}}</a></td>
+                                    <td>{{.Email}}</td>
                                     <td>
                                         <a href="javascript:void(0);"> {{if .VerifyState}}√{{else}}×{{end}}</a>
                                     </td>
