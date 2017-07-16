@@ -45,7 +45,9 @@ go get -u -v github.com/wangsongyan/wblog
 cd $GOPATH/src/github.com/wangsongyan/wblog
 go run main.go
 ```
-### 效果图
+
+## 效果图
+
 ![file](http://os1jc62ua.bkt.clouddn.com/Fk8qAplQM00lZSQH06jh8W6t9jsv)
 
 ![file](http://os1jc62ua.bkt.clouddn.com/FlXjba1ll3H70PaPe_kGf3Yxdgrz)
