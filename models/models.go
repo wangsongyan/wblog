@@ -5,7 +5,8 @@ import (
 	//_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/go-sql-driver/mysql"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/helpers"
@@ -110,8 +111,8 @@ type QrArchive struct {
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	//db, err := gorm.Open("sqlite3", "wblog.db")
-	db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
+	db, err := gorm.Open("sqlite3", "wblog.db")
+	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		panic(err)
 	}
@@ -258,7 +259,8 @@ func MustListPostArchives() []*QrArchive {
 
 func ListPostArchives() ([]*QrArchive, error) {
 	var archives []*QrArchive
-	sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	//sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	sql := `select strftime('%Y-%m',created_at) as month,count(*) as total from posts where is_published = ? group by month order by month desc`
 	rows, err := DB.Raw(sql, true).Rows()
 	if err != nil {
 		return nil, err
@@ -282,7 +284,9 @@ func ListPostByArchive(year, month string) ([]*Post, error) {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
-	rows, err := DB.Raw("select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc", condition, true).Rows()
+	//sql := `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc`
+	sql := `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc`
+	rows, err := DB.Raw(sql, condition, true).Rows()
 	if err != nil {
 		return nil, err
 	}
