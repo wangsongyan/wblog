@@ -11,6 +11,8 @@ func PageGet(c *gin.Context) {
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
 	if err == nil && page.IsPublished {
+		page.View++
+		page.Update()
 		c.HTML(http.StatusOK, "page/display.html", gin.H{
 			"page": page,
 		})

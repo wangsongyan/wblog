@@ -104,9 +104,14 @@
                     </tr><!-- show tags -->
 
                     <!-- display article created time -->
-                    <span class="createdTime" th:text="${#dates.format(article.createdTime, 'yy-MM-dd HH:mm')}">
-                        {{dateFormat .post.CreatedAt "06-01-02 15:04"}}
+                    <span class="createdTime">
+                        <span class="glyphicon glyphicon-calendar"></span>{{dateFormat .post.CreatedAt "06-01-02 15:04"}}
                     </span>
+
+                    <span class="createdTime">
+                        <span class="glyphicon glyphicon-eye-open"></span>{{.post.View}}&nbsp;&nbsp;
+                    </span>
+
                 </div><!-- display article info -->
                 <br/>
 

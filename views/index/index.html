@@ -50,7 +50,14 @@
             <!-- First Blog Post -->
             {{range $postkey,$postvalue:=.posts}}
                 <div class="articleInfo">
-                    <span><a class="articleTitle" href="/post/{{$postvalue.ID}}">{{$postvalue.Title}}</a></span>
+                    <span><a class="articleTitle" href="/post/{{$postvalue.ID}}">
+                        {{$length := len $postvalue.Title}}
+                        {{if ge $length 40}}
+                            {{truncate $postvalue.Title 40}}...
+                        {{else}}
+                            {{$postvalue.Title}}
+                        {{end}}
+                    </a></span>
                     <span class="createdTime" style="margin-right: 10px;">
                         {{dateFormat $postvalue.CreatedAt "06-01-02 15:04"}}
                     </span>

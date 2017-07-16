@@ -12,6 +12,8 @@ func PostGet(c *gin.Context) {
 	id := c.Param("id")
 	post, err := models.GetPostById(id)
 	if err == nil && post.IsPublished {
+		post.View++
+		post.Update()
 		post.Tags, _ = models.ListTagByPostId(id)
 		post.Comments, _ = models.ListCommentByPostID(id)
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
