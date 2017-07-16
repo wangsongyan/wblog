@@ -27,6 +27,14 @@
 			"Rev": "75ee37df8664a47cd5d9eb84d41e1f2b08086893"
 		},
 		{
+			"ImportPath": "github.com/claudiu/gocron",
+			"Rev": "980c96bf412b6e28177bcf6b7105640cf04137d6"
+		},
+		{
+			"ImportPath": "github.com/denisbakhtin/sitemap",
+			"Rev": "3b73dfe0369c7a2df68052d0a13d74187ced97f5"
+		},
+		{
 			"ImportPath": "github.com/garyburd/redigo/internal",
 			"Comment": "v1.1.0-6-g57f1cd7",
 			"Rev": "57f1cd7de6175c96b423e7ac2534ff2b39e2ef79"
@@ -122,6 +130,10 @@
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.4-49-g067529f",
 			"Rev": "067529f716f4c3f5e37c8c95ddd59df1007290ae"
+		},
+		{
+			"ImportPath": "github.com/snluu/uuid",
+			"Rev": "1dd34a9ad6c0e8dec93107f9c7425ea5713f78e1"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
