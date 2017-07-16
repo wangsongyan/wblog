@@ -90,6 +90,14 @@ type Subscriber struct {
 	Signature      string    //签名
 }
 
+// table link
+type Link struct {
+	gorm.Model
+	Name string //名称
+	Url  string //地址
+	Sort int    `gorm:"default:'0'"` //排序
+}
+
 // query result
 type QrArchive struct {
 	ArchiveDate time.Time //month
@@ -109,7 +117,7 @@ func InitDB() *gorm.DB {
 	DB = db
 
 	//db.LogMode(true)
-	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{})
+	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
 	return db
@@ -450,4 +458,23 @@ func GetSubscriberBySignature(key string) (*Subscriber, error) {
 	var subscriber Subscriber
 	err := DB.Find(&subscriber, "signature = ?", key).Error
 	return &subscriber, err
+}
+
+// Link
+func (link *Link) Insert() error {
+	return DB.Model(&Link{}).Create(link).Error
+}
+
+func (link *Link) Update() error {
+	return DB.Save(link).Error
+}
+
+func (link *Link) Delete() error {
+	return DB.Delete(link).Error
+}
+
+func ListLinks() ([]*Link, error) {
+	var links []*Link
+	err := DB.Find(&links).Error
+	return links, err
 }

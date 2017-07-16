@@ -61,6 +61,8 @@ func main() {
 	router.GET("/tag/:id", controllers.TagGet)
 	router.GET("/archives/:year/:month", controllers.ArchiveGet)
 
+	router.GET("/link", controllers.LinkGet)
+
 	authorized := router.Group("/admin")
 	authorized.Use(AuthRequired())
 	{
@@ -104,6 +106,11 @@ func main() {
 		// subscriber
 		authorized.GET("/subscriber", controllers.SubscriberIndex)
 		authorized.POST("/subscriber", controllers.SubscriberPost)
+
+		// link
+		authorized.GET("/link", controllers.LinkIndex)
+		authorized.POST("/new_link", controllers.LinkCreate)
+		authorized.POST("/link/:id", controllers.LinkUpdate)
 	}
 
 	router.Run(":8090")
