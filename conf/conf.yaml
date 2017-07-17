@@ -11,7 +11,8 @@ github_tokenurl: https://github.com/login/oauth/access_token
 github_scope:
 smtp_username:
 smtp_password:
-smtp_host:
+smtp_host: smtp.163.com:25
 session_secret: wblog
 domain: http://blog.wangsy.net
 public: static
+addr: :8090

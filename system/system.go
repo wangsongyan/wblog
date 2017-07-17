@@ -24,6 +24,7 @@ type Configuration struct {
 	SessionSecret      string `yaml:"session_secret"` //session_secret
 	Domain             string `yaml:"domain"`         //domain
 	Public             string `yaml:"public"`         //public
+	Addr               string `yaml:"addr"`           //addr
 }
 
 var configuration *Configuration
