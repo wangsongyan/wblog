@@ -115,7 +115,7 @@ func main() {
 		authorized.POST("/link/:id/delete", controllers.LinkDelete)
 	}
 
-	router.Run(":8090")
+	router.Run(system.GetConfiguration().Addr)
 }
 
 func setTemplate(engine *gin.Engine) {
