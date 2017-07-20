@@ -383,6 +383,12 @@ func (user *User) FirstOrCreate() (*User, error) {
 	return user, err
 }
 
+func IsGithubIdExists(githubId string, id uint) (*User, error) {
+	var user User
+	err := DB.First(&user, "github_login_id = ? and id != ?", githubId, id).Error
+	return &user, err
+}
+
 func GetUser(id interface{}) (*User, error) {
 	var user User
 	err := DB.First(&user, id).Error
