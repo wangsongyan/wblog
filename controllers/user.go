@@ -15,6 +15,39 @@ import (
 	"net/http"
 )
 
+type GithubUserInfo struct {
+	AvatarURL         string      `json:"avatar_url"`
+	Bio               interface{} `json:"bio"`
+	Blog              string      `json:"blog"`
+	Company           interface{} `json:"company"`
+	CreatedAt         string      `json:"created_at"`
+	Email             interface{} `json:"email"`
+	EventsURL         string      `json:"events_url"`
+	Followers         int         `json:"followers"`
+	FollowersURL      string      `json:"followers_url"`
+	Following         int         `json:"following"`
+	FollowingURL      string      `json:"following_url"`
+	GistsURL          string      `json:"gists_url"`
+	GravatarID        string      `json:"gravatar_id"`
+	Hireable          interface{} `json:"hireable"`
+	HTMLURL           string      `json:"html_url"`
+	ID                int         `json:"id"`
+	Location          interface{} `json:"location"`
+	Login             string      `json:"login"`
+	Name              interface{} `json:"name"`
+	OrganizationsURL  string      `json:"organizations_url"`
+	PublicGists       int         `json:"public_gists"`
+	PublicRepos       int         `json:"public_repos"`
+	ReceivedEventsURL string      `json:"received_events_url"`
+	ReposURL          string      `json:"repos_url"`
+	SiteAdmin         bool        `json:"site_admin"`
+	StarredURL        string      `json:"starred_url"`
+	SubscriptionsURL  string      `json:"subscriptions_url"`
+	Type              string      `json:"type"`
+	UpdatedAt         string      `json:"updated_at"`
+	URL               string      `json:"url"`
+}
+
 func SigninGet(c *gin.Context) {
 	/*session := sessions.Default(c)
 	if session.Get("UserID") != nil {
@@ -101,6 +134,53 @@ func SigninPost(c *gin.Context) {
 
 func Oauth2Callback(c *gin.Context) {
 	code := c.Query("code")
+	token, err := exchangeTokenByCode(code)
+	if err == nil {
+		var userInfo *GithubUserInfo
+		userInfo, err = getGithubUserInfoByAceessToken(token)
+		if err == nil {
+			fmt.Println(userInfo)
+			var user *models.User
+			if sessionUser, exists := c.Get("User"); exists {
+				user, _ = sessionUser.(*models.User)
+				_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
+				if err1 != nil { // 未绑定
+					user.GithubLoginId = userInfo.Login
+					user.AvatarUrl = user.AvatarUrl
+					err = user.Update()
+					if err == nil {
+						c.Redirect(http.StatusMovedPermanently, "/admin/profile")
+						return
+					}
+				} else {
+					err = errors.New("this github loginId has bound another account.")
+				}
+			} else {
+				user = &models.User{
+					GithubLoginId: userInfo.Login,
+					AvatarUrl:     userInfo.AvatarURL,
+				}
+				user, err = user.FirstOrCreate()
+			}
+
+			if err == nil {
+				s := sessions.Default(c)
+				s.Set("UserID", user.ID)
+				s.Save()
+				if user.IsAdmin {
+					c.Redirect(http.StatusMovedPermanently, "/admin/index")
+				} else {
+					c.Redirect(http.StatusMovedPermanently, "/")
+				}
+				return
+			}
+		}
+	}
+	log.Println(err)
+	c.Redirect(http.StatusMovedPermanently, "/signin")
+}
+
+func exchangeTokenByCode(code string) (string, error) {
 	t := &oauth.Transport{Config: &oauth.Config{
 		ClientId:     system.GetConfiguration().GithubClientId,
 		ClientSecret: system.GetConfiguration().GithubClientSecret,
@@ -108,72 +188,28 @@ func Oauth2Callback(c *gin.Context) {
 		TokenURL:     system.GetConfiguration().GithubTokenUrl,
 		Scope:        system.GetConfiguration().GithubScope,
 	}}
-	// Exchange the received code for a token
 	tok, err := t.Exchange(code)
 	if err == nil {
 		tokenCache := oauth.CacheFile("./request.token")
-
 		err := tokenCache.PutToken(tok)
-		if err != nil {
-			log.Println("Cache write:", err)
-		}
-		log.Printf("Token is cached in %v\n", tokenCache)
-		token := tok.AccessToken
-		fmt.Print(token)
-		resp, err := http.Get("https://api.github.com/user?access_token=" + token)
-		defer resp.Body.Close()
-		if err != nil {
-			log.Println(err)
-		} else {
-			body, _ := ioutil.ReadAll(resp.Body)
-			var githubinfo struct {
-				Login     string `json:"login"`
-				AvatarUrl string `json:"avatar_url"`
-			}
-			fmt.Println(string(body))
-			err = json.Unmarshal(body, &githubinfo)
-			if err == nil {
-				fmt.Println(githubinfo)
-				var user *models.User
-				sessionUser, exists := c.Get("User")
-				fmt.Println(sessionUser)
-				if exists {
-					var ok bool
-					user, ok = sessionUser.(*models.User)
-					if ok {
-						user.GithubLoginId = githubinfo.Login
-						user.AvatarUrl = githubinfo.AvatarUrl
-						err = user.Update()
-						//TODO 检查githubId是否已经存在
-					} else {
-						err = errors.New("assert failed.")
-					}
-				} else {
-					user = &models.User{
-						GithubLoginId: githubinfo.Login,
-						AvatarUrl:     githubinfo.AvatarUrl,
-					}
-					user, err = user.FirstOrCreate()
-				}
-
-				if err == nil {
-					s := sessions.Default(c)
-					s.Set("UserID", user.ID)
-					s.Save()
-					c.Redirect(http.StatusMovedPermanently, "/admin/index")
-					return
-				} else {
-					log.Print(err)
-				}
-			} else {
-				log.Print(err)
-			}
-		}
-	} else {
-		log.Println(err)
+		return tok.AccessToken, err
 	}
-	c.Redirect(http.StatusMovedPermanently, "/signin")
+	return "", err
+}
 
+func getGithubUserInfoByAceessToken(token string) (*GithubUserInfo, error) {
+	resp, err := http.Get(fmt.Sprintf("https://api.github.com/user?access_token=%s", token))
+	defer resp.Body.Close()
+	if err == nil {
+		var body []byte
+		body, err = ioutil.ReadAll(resp.Body)
+		if err == nil {
+			var userInfo GithubUserInfo
+			err = json.Unmarshal(body, &userInfo)
+			return &userInfo, err
+		}
+	}
+	return nil, err
 }
 
 func ProfileGet(c *gin.Context) {
