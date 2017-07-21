@@ -112,7 +112,8 @@ func PageIndex(c *gin.Context) {
 	pages, _ := models.ListPage(false)
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/page.html", gin.H{
-		"pages": pages,
-		"user":  user,
+		"pages":    pages,
+		"user":     user,
+		"comments": models.MustListUnreadComment(),
 	})
 }

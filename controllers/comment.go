@@ -44,3 +44,23 @@ func CommentDelete(c *gin.Context) {
 		"succeed": err == nil,
 	})
 }
+
+func CommentRead(c *gin.Context) {
+	id := c.Param("id")
+	_id, err := strconv.ParseUint(id, 10, 64)
+	if err == nil {
+		comment := new(models.Comment)
+		comment.ID = uint(_id)
+		err = comment.Update()
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": err == nil,
+	})
+}
+
+func CommentReadAll(c *gin.Context) {
+	err := models.SetAllCommentRead()
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": err == nil,
+	})
+}

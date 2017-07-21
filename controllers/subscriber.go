@@ -153,6 +153,7 @@ func SubscriberIndex(c *gin.Context) {
 	c.HTML(http.StatusOK, "admin/subscriber.html", gin.H{
 		"subscribers": subscribers,
 		"user":        user,
+		"comments":    models.MustListUnreadComment(),
 	})
 }
 

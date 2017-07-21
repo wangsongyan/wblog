@@ -22,42 +22,25 @@
                 <li class="dropdown notifications-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-bell-o"></i>
-                        <span class="label label-warning">10</span>
+                        {{if gt (len .comments) 0}}
+                        <span class="label label-warning">{{len .comments}}</span>
+                        {{end}}
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="header">You have 10 notifications</li>
+                        <li class="header">You have {{len .comments}} comments</li>
                         <li>
                             <!-- inner menu: contains the actual data -->
                             <ul class="menu">
+                                {{range .comments}}
                                 <li>
-                                    <a href="#">
-                                        <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                                    <a href="javascript:void(0);" data-href="/admin/comment/{{.ID}}" data-redirect="/post/{{.PostID}}" class="readcomment">
+                                        <i class="fa fa-comment text-aqua"></i> {{.Content}}
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the
-                                        page and may cause design problems
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-users text-red"></i> 5 new members joined
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-shopping-cart text-green"></i> 25 sales made
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-user text-red"></i> You changed your username
-                                    </a>
-                                </li>
+                                {{end}}
                             </ul>
                         </li>
-                        <li class="footer"><a href="#">View all</a></li>
+                        <li class="footer"><a href="javascript:void(0);" class="readall">View all</a></li>
                     </ul>
                 </li>
                 <!-- User Account: style can be found in dropdown.less -->

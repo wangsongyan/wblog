@@ -75,9 +75,10 @@ type User struct {
 // table comments
 type Comment struct {
 	BaseModel
-	UserID  uint   // 用户id
-	Content string // 内容
-	PostID  uint   // 文章id
+	UserID    uint   // 用户id
+	Content   string // 内容
+	PostID    uint   // 文章id
+	ReadState bool   `gorm:"default:false"` // 阅读状态
 	//Replies []*Comment // 评论
 	NickName  string `gorm:"-"`
 	AvatarUrl string `gorm:"-"`
@@ -121,7 +122,7 @@ func InitDB() *gorm.DB {
 	}
 	DB = db
 
-	//db.LogMode(true)
+	db.LogMode(true)
 	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
 	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 
@@ -403,12 +404,22 @@ func (user *User) UpdateProfile(avatarUrl, nickName string) error {
 }
 
 func (user *User) UpdateEmail(email string) error {
-	return DB.Model(user).Update("email", email).Error
+	if len(email) > 0 {
+		return DB.Model(user).Update("email", email).Error
+	} else {
+		return DB.Model(user).Update("email", gorm.Expr("NULL")).Error
+	}
 }
 
 func (user *User) UpdateGithubUserInfo() error {
+	var githubLoginId interface{}
+	if len(user.GithubLoginId) == 0 {
+		githubLoginId = gorm.Expr("NULL")
+	} else {
+		githubLoginId = user.GithubLoginId
+	}
 	return DB.Model(user).Update(map[string]interface{}{
-		"github_login_id": user.GithubLoginId,
+		"github_login_id": githubLoginId,
 		"avatar_url":      user.AvatarUrl,
 		"github_url":      user.GithubUrl,
 	}).Error
@@ -423,6 +434,25 @@ func ListUsers() ([]*User, error) {
 // Comment
 func (comment *Comment) Insert() error {
 	return DB.Create(comment).Error
+}
+
+func (comment *Comment) Update() error {
+	return DB.Model(comment).UpdateColumn("read_state", true).Error
+}
+
+func SetAllCommentRead() error {
+	return DB.Model(&Comment{}).Where("read_state = ?", false).Update("read_state", true).Error
+}
+
+func ListUnreadComment() ([]*Comment, error) {
+	var comments []*Comment
+	err := DB.Where("read_state = ?", false).Find(&comments).Error
+	return comments, err
+}
+
+func MustListUnreadComment() []*Comment {
+	comments, _ := ListUnreadComment()
+	return comments
 }
 
 func (comment *Comment) Delete() error {
