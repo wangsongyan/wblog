@@ -117,6 +117,10 @@ func main() {
 		authorized.POST("/new_link", controllers.LinkCreate)
 		authorized.POST("/link/:id/edit", controllers.LinkUpdate)
 		authorized.POST("/link/:id/delete", controllers.LinkDelete)
+
+		// comment
+		authorized.POST("/comment/:id", controllers.CommentRead)
+		authorized.POST("/read_all", controllers.CommentReadAll)
 	}
 
 	router.Run(system.GetConfiguration().Addr)

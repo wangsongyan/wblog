@@ -223,8 +223,9 @@ func ProfileGet(c *gin.Context) {
 	sessionUser, exists := c.Get("User")
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
-			"user":    sessionUser,
-			"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
+			"user":     sessionUser,
+			"authUrl":  fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
+			"comments": models.MustListUnreadComment(),
 		})
 	}
 }
@@ -314,7 +315,8 @@ func UserIndex(c *gin.Context) {
 	users, _ := models.ListUsers()
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/user.html", gin.H{
-		"users": users,
-		"user":  user,
+		"users":    users,
+		"user":     user,
+		"comments": models.MustListUnreadComment(),
 	})
 }

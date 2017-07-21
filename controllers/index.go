@@ -38,5 +38,6 @@ func AdminIndex(c *gin.Context) {
 		"tagCount":     models.CountTag(),
 		"commentCount": models.CountComment(),
 		"user":         user,
+		"comments":     models.MustListUnreadComment(),
 	})
 }

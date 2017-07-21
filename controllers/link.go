@@ -13,8 +13,9 @@ func LinkIndex(c *gin.Context) {
 	links, _ := models.ListLinks()
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/link.html", gin.H{
-		"links": links,
-		"user":  user,
+		"links":    links,
+		"user":     user,
+		"comments": models.MustListUnreadComment(),
 	})
 }
 

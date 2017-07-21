@@ -157,8 +157,9 @@ func PostIndex(c *gin.Context) {
 	posts, _ := models.ListPost("", false)
 	user, _ := c.Get("User")
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
-		"posts":  posts,
-		"Active": "posts",
-		"user":   user,
+		"posts":    posts,
+		"Active":   "posts",
+		"user":     user,
+		"comments": models.MustListUnreadComment(),
 	})
 }
