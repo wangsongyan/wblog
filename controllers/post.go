@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,8 +18,11 @@ func PostGet(c *gin.Context) {
 		post.Update()
 		post.Tags, _ = models.ListTagByPostId(id)
 		post.Comments, _ = models.ListCommentByPostID(id)
+		user, _ := c.Get("User")
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
-			"post": post,
+			"post":    post,
+			"user":    user,
+			"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
 		})
 	} else {
 		Handle404(c)

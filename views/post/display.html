@@ -92,7 +92,7 @@
 
 <body>
 
-{{template "navigation.html"}}
+{{template "navigation.html" .}}
 
 <!-- Page Content -->
 <div class="container main">
@@ -136,7 +136,7 @@
                 <!-- Comment -->
                 {{range .post.Comments}}
                 <div class="media">
-                    <a class="pull-left" href="#">
+                    <a class="pull-left" href="{{.GithubUrl}}" target="_blank">
                         {{if .AvatarUrl}}
                         <img class="user-image" src="{{.AvatarUrl}}" alt="">
                         {{else}}
@@ -144,7 +144,7 @@
                         {{end}}
                     </a>
                     <div class="media-body">
-                        <h4 class="media-heading">{{.NickName}}
+                        <h4 class="media-heading"><a href="{{.GithubUrl}}" target="_blank">{{.NickName}}</a>
                             <small>{{dateFormat .CreatedAt "06-01-02 15:04"}}</small>
                         </h4>
                         {{.Content}}
@@ -152,6 +152,22 @@
                 </div>
                 {{end}}
             </comment>
+
+            <div class="media">
+            {{if not .user}}
+                <a href="{{.authUrl}}">登录发表评论</a>
+            {{else}}
+            <form role="form" action="/visitor/new_comment" method="post">
+                <input name="postId" type="hidden" value="{{.post.ID}}">
+                <div class="form-group">
+                    <textarea name="content" class="form-control"></textarea>
+                </div>
+                <div class="pull-right">
+                    <button type="submit" class="btn btn-primary">评论</button>
+                </div>
+            </form>
+            {{end}}
+            </div>
 
         </div>
     </div>

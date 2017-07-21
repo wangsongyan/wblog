@@ -78,10 +78,11 @@ type Comment struct {
 	UserID    uint   // 用户id
 	Content   string // 内容
 	PostID    uint   // 文章id
-	ReadState bool   `gorm:"default:false"` // 阅读状态
+	ReadState bool   `gorm:"default:'0'"` // 阅读状态
 	//Replies []*Comment // 评论
 	NickName  string `gorm:"-"`
 	AvatarUrl string `gorm:"-"`
+	GithubUrl string `gorm:"-"`
 }
 
 // table subscribe
@@ -446,7 +447,7 @@ func SetAllCommentRead() error {
 
 func ListUnreadComment() ([]*Comment, error) {
 	var comments []*Comment
-	err := DB.Where("read_state = ?", false).Find(&comments).Error
+	err := DB.Where("read_state = ?", false).Order("created_at desc").Find(&comments).Error
 	return comments, err
 }
 
@@ -465,7 +466,7 @@ func ListCommentByPostID(postId string) ([]*Comment, error) {
 		return nil, err
 	}
 	var comments []*Comment
-	rows, err := DB.Raw("select c.*,u.github_login_id nick_name,u.avatar_url from comments c inner join users u on c.user_id = u.id where c.post_id = ? order by created_at desc", uint(pid)).Rows()
+	rows, err := DB.Raw("select c.*,u.github_login_id nick_name,u.avatar_url,u.github_url from comments c inner join users u on c.user_id = u.id where c.post_id = ? order by created_at desc", uint(pid)).Rows()
 	if err != nil {
 		return nil, err
 	}

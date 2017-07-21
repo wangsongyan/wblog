@@ -148,16 +148,8 @@ func Oauth2Callback(c *gin.Context) {
 				if err1 != nil { // 未绑定
 					user.GithubLoginId = userInfo.Login
 					user.AvatarUrl = userInfo.AvatarURL
-					user.GithubUrl = userInfo.URL
+					user.GithubUrl = userInfo.HTMLURL
 					err = user.UpdateGithubUserInfo()
-					if err == nil {
-						if user.IsAdmin {
-							c.Redirect(http.StatusMovedPermanently, "/admin/profile")
-						} else {
-							c.Redirect(http.StatusMovedPermanently, "/")
-						}
-						return
-					}
 				} else {
 					err = errors.New("this github loginId has bound another account.")
 				}
@@ -165,13 +157,14 @@ func Oauth2Callback(c *gin.Context) {
 				user = &models.User{
 					GithubLoginId: userInfo.Login,
 					AvatarUrl:     userInfo.AvatarURL,
-					GithubUrl:     userInfo.URL,
+					GithubUrl:     userInfo.HTMLURL,
 				}
 				user, err = user.FirstOrCreate()
 			}
 
 			if err == nil {
 				s := sessions.Default(c)
+				s.Delete("UserID")
 				s.Set("UserID", user.ID)
 				s.Save()
 				if user.IsAdmin {

@@ -30,7 +30,11 @@
 
             <ul class="pull-right nav navbar-nav">
                 <ul class="nav navbar-nav">
-                    <li><a href="/">{{/*.user.GithubLoginId*/}}</a></li>
+                    {{if .user}}
+                    <li><a href="/logout">退出登录</a></li>
+                    {{else}}
+                    <li><a href="{{.authUrl}}">Github登录</a></li>
+                    {{end}}
                 </ul>
             </ul>
         </div>
