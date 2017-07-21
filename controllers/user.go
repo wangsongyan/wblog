@@ -133,6 +133,7 @@ func SigninPost(c *gin.Context) {
 }
 
 func Oauth2Callback(c *gin.Context) {
+	fmt.Println(c.Request.Referer())
 	code := c.Query("code")
 	token, err := exchangeTokenByCode(code)
 	if err == nil {
@@ -146,10 +147,15 @@ func Oauth2Callback(c *gin.Context) {
 				_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
 				if err1 != nil { // 未绑定
 					user.GithubLoginId = userInfo.Login
-					user.AvatarUrl = user.AvatarUrl
-					err = user.Update()
+					user.AvatarUrl = userInfo.AvatarURL
+					user.GithubUrl = userInfo.URL
+					err = user.UpdateGithubUserInfo()
 					if err == nil {
-						c.Redirect(http.StatusMovedPermanently, "/admin/profile")
+						if user.IsAdmin {
+							c.Redirect(http.StatusMovedPermanently, "/admin/profile")
+						} else {
+							c.Redirect(http.StatusMovedPermanently, "/")
+						}
 						return
 					}
 				} else {
@@ -159,6 +165,7 @@ func Oauth2Callback(c *gin.Context) {
 				user = &models.User{
 					GithubLoginId: userInfo.Login,
 					AvatarUrl:     userInfo.AvatarURL,
+					GithubUrl:     userInfo.URL,
 				}
 				user, err = user.FirstOrCreate()
 			}
@@ -294,7 +301,8 @@ func UnbindGithub(c *gin.Context) {
 				"message": "github haven't bound.",
 			})
 		} else {
-			err := user.UpdateGithubId("")
+			user.GithubLoginId = ""
+			err := user.UpdateGithubUserInfo()
 			c.JSON(http.StatusOK, gin.H{
 				"succeed": err == nil,
 			})

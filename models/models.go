@@ -5,8 +5,8 @@ import (
 	//_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
-	//_ "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
+	//_ "github.com/mattn/go-sqlite3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/helpers"
@@ -66,6 +66,7 @@ type User struct {
 	SecretKey     string    `gorm:"default:null"`              //密钥
 	OutTime       time.Time //过期时间
 	GithubLoginId string    `gorm:"unique_index;default:null"` // github唯一标识
+	GithubUrl     string    //github地址
 	IsAdmin       bool      //是否是管理员
 	AvatarUrl     string    // 头像链接
 	NickName      string    // 昵称
@@ -78,6 +79,8 @@ type Comment struct {
 	Content string // 内容
 	PostID  uint   // 文章id
 	//Replies []*Comment // 评论
+	NickName  string `gorm:"-"`
+	AvatarUrl string `gorm:"-"`
 }
 
 // table subscribe
@@ -111,8 +114,8 @@ type QrArchive struct {
 var DB *gorm.DB
 
 func InitDB() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "wblog.db")
-	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
+	//db, err := gorm.Open("sqlite3", "wblog.db")
+	db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
 	if err != nil {
 		panic(err)
 	}
@@ -403,8 +406,12 @@ func (user *User) UpdateEmail(email string) error {
 	return DB.Model(user).Update("email", email).Error
 }
 
-func (user *User) UpdateGithubId(githubId string) error {
-	return DB.Model(user).Update("github_login_id", githubId).Error
+func (user *User) UpdateGithubUserInfo() error {
+	return DB.Model(user).Update(map[string]interface{}{
+		"github_login_id": user.GithubLoginId,
+		"avatar_url":      user.AvatarUrl,
+		"github_url":      user.GithubUrl,
+	}).Error
 }
 
 func ListUsers() ([]*User, error) {
@@ -428,7 +435,16 @@ func ListCommentByPostID(postId string) ([]*Comment, error) {
 		return nil, err
 	}
 	var comments []*Comment
-	err = DB.Find(&comments, "post_id = ?", pid).Error
+	rows, err := DB.Raw("select c.*,u.github_login_id nick_name,u.avatar_url from comments c inner join users u on c.user_id = u.id where c.post_id = ? order by created_at desc", uint(pid)).Rows()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var comment Comment
+		DB.ScanRows(rows, &comment)
+		comments = append(comments, &comment)
+	}
 	return comments, err
 }
 
