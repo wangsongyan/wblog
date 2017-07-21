@@ -48,8 +48,12 @@ func main() {
 	router.GET("/logout", controllers.LogoutGet)
 	router.GET("/oauth2callback", controllers.Oauth2Callback)
 
-	router.POST("/new_comment", controllers.CommentPost)
-	router.POST("/comment/:id/delete", controllers.CommentDelete)
+	visitor := router.Group("/visitor")
+	visitor.Use(AuthRequired())
+	{
+		visitor.POST("/new_comment", controllers.CommentPost)
+		visitor.POST("/comment/:id/delete", controllers.CommentDelete)
+	}
 
 	// subscriber
 	router.GET("/subscribe", controllers.SubscribeGet)
@@ -65,7 +69,7 @@ func main() {
 	router.GET("/link/:id", controllers.LinkGet)
 
 	authorized := router.Group("/admin")
-	authorized.Use(AuthRequired())
+	authorized.Use(AdminScopeRequired())
 	{
 		// index
 		authorized.GET("/index", controllers.AdminIndex)
@@ -168,8 +172,8 @@ func SharedData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		if uID := session.Get("UserID"); uID != nil {
-			user, _ := models.GetUser(uID)
-			if user.ID != 0 {
+			user, err := models.GetUser(uID)
+			if err == nil {
 				c.Set("User", user)
 			}
 		}
@@ -181,10 +185,26 @@ func SharedData() gin.HandlerFunc {
 }
 
 //AuthRequired grants access to authenticated users, requires SharedData middleware
-func AuthRequired() gin.HandlerFunc {
+func AdminScopeRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if user, _ := c.Get("User"); user != nil {
 			if u, ok := user.(*models.User); ok && u.IsAdmin {
+				c.Next()
+				return
+			}
+		}
+		logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
+		c.HTML(http.StatusForbidden, "errors/error.html", gin.H{
+			"message": "Forbidden!",
+		})
+		c.Abort()
+	}
+}
+
+func AuthRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if user, _ := c.Get("User"); user != nil {
+			if _, ok := user.(*models.User); ok {
 				c.Next()
 				return
 			}

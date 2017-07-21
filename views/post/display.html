@@ -43,6 +43,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css" />
     <script>hljs.initHighlightingOnLoad();</script>
 
+    <style>
+        .user-image {
+            float: left;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            margin-right: 10px;
+            margin-top: -2px;
+        }
+    </style>
+
     <script>
         $(document).ready(function () {
             // markdown parse
@@ -123,16 +134,20 @@
             <hr>
             <comment>
                 <!-- Comment -->
-                {{range $commentkey,$commentvalue := .post.Comments}}
+                {{range .post.Comments}}
                 <div class="media">
                     <a class="pull-left" href="#">
-                        <img class="media-object" src="http://placehold.it/64x64" alt="">
+                        {{if .AvatarUrl}}
+                        <img class="user-image" src="{{.AvatarUrl}}" alt="">
+                        {{else}}
+                        <img class="user-image" src="http://placehold.it/64x64" alt="">
+                        {{end}}
                     </a>
                     <div class="media-body">
-                        <h4 class="media-heading">Start Bootstrap
-                            <small>{{dateFormat $commentvalue.CreatedAt "06-01-02 15:04"}}</small>
+                        <h4 class="media-heading">{{.NickName}}
+                            <small>{{dateFormat .CreatedAt "06-01-02 15:04"}}</small>
                         </h4>
-                        {{$commentvalue.Content}}
+                        {{.Content}}
                     </div>
                 </div>
                 {{end}}
