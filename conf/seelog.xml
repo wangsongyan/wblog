@@ -1,0 +1,17 @@
+<seelog minlevel="trace">
+    <outputs formatid="common">
+        <filter levels="info,debug">
+            <rollingfile type="size" filename="log/common.log" maxsize="102400" maxrolls="5"/>
+        </filter>
+        <filter levels="error,critical">
+            <rollingfile type="size" filename="log/error.log" maxsize="102400" maxrolls="5"/>
+        </filter>
+    </outputs>
+    <formats>
+        <!--
+
+        <format id="common" format="%Date %Time %EscM(46)[%LEV]%EscM(49)%EscM(0) [%File:%Line] [%Func] %Msg%n" />
+        -->
+        <format id="common" format="%Date %Time [%LEV] [%File:%Line] [%Func] %Msg%n" />
+    </formats>
+</seelog>
