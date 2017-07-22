@@ -20,3 +20,4 @@
 *.db
 request.token
 /log/
+/vendor/
