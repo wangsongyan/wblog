@@ -1,9 +1,7 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"

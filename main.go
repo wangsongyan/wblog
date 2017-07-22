@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Sirupsen/logrus"
+	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -13,15 +13,28 @@ import (
 	"net/http"
 )
 
+func init() {
+	logger, err := seelog.LoggerFromConfigAsFile("conf/seelog.xml")
+	if err != nil {
+		seelog.Critical("err parsing config log file", err)
+		return
+	}
+	seelog.ReplaceLogger(logger)
+	defer seelog.Flush()
+}
+
 func main() {
 
-	db := models.InitDB()
+	db, err := models.InitDB()
+	if err != nil {
+		seelog.Critical("err open databases", err)
+		return
+	}
 	defer db.Close()
 	system.LoadConfiguration("conf/conf.yaml")
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
-
-	//router.LoadHTMLGlob("views/**/*")
 
 	setTemplate(router)
 	setSessions(router)
@@ -143,10 +156,7 @@ func setTemplate(engine *gin.Engine) {
 		render.Glob = "views/**/*"
 		engine.HTMLRender = render
 	} else {
-		t, err := template.ParseGlob("views/**/*")
-		if err == nil {
-			t.Funcs(funcMap)
-		}
+		t, err := template.New("").Funcs(funcMap).ParseGlob("views/**/*")
 		engine.SetHTMLTemplate(template.Must(t, err))
 	}
 
@@ -197,7 +207,7 @@ func AdminScopeRequired() gin.HandlerFunc {
 				return
 			}
 		}
-		logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
+		seelog.Warnf("User not authorized to visit %s", c.Request.RequestURI)
 		c.HTML(http.StatusForbidden, "errors/error.html", gin.H{
 			"message": "Forbidden!",
 		})
@@ -213,7 +223,7 @@ func AuthRequired() gin.HandlerFunc {
 				return
 			}
 		}
-		logrus.Warnf("User not authorized to visit %s", c.Request.RequestURI)
+		seelog.Warnf("User not authorized to visit %s", c.Request.RequestURI)
 		c.HTML(http.StatusForbidden, "errors/error.html", gin.H{
 			"message": "Forbidden!",
 		})

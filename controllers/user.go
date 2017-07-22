@@ -3,8 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"github.com/alimoeeny/gooauth2"
+	"github.com/cihub/seelog"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -12,7 +12,6 @@ import (
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -170,7 +169,7 @@ func Oauth2Callback(c *gin.Context) {
 			}
 		}
 	}
-	logrus.Error(err)
+	seelog.Error(err)
 	c.Redirect(http.StatusMovedPermanently, "/signin")
 }
 

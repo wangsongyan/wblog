@@ -1,9 +1,9 @@
 package system
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/go-yaml/yaml"
 	"io/ioutil"
-	"log"
 )
 
 type Configuration struct {
@@ -32,15 +32,15 @@ var configuration *Configuration
 func LoadConfiguration(path string) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		logrus.Fatalf("error: %v", err)
 	}
 	var config Configuration
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		logrus.Fatalf("error: %v", err)
 	}
 	configuration = &config
-	log.Println(configuration)
+	logrus.Debugf("config load succeessfully:%v", configuration)
 }
 
 func GetConfiguration() *Configuration {

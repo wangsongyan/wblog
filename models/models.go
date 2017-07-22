@@ -1,12 +1,11 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
-	//_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	//_ "github.com/mattn/go-sqlite3"
+	"github.com/jinzhu/gorm"
+	//_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/helpers"
@@ -115,19 +114,17 @@ type QrArchive struct {
 
 var DB *gorm.DB
 
-func InitDB() *gorm.DB {
-	//db, err := gorm.Open("sqlite3", "wblog.db")
-	db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
-	if err != nil {
-		panic(err)
+func InitDB() (*gorm.DB, error) {
+	db, err := gorm.Open("sqlite3", "wblog.db")
+	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Local")
+	if err == nil {
+		DB = db
+		//db.LogMode(true)
+		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
+		db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
+		return db, err
 	}
-	DB = db
-
-	db.LogMode(true)
-	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
-	db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
-
-	return db
+	return nil, err
 }
 
 // Page
@@ -157,6 +154,7 @@ func GetPageById(id string) (*Page, error) {
 	err = DB.First(&page, "id = ?", pid).Error
 	return &page, err
 }
+
 func ListPublishedPage() ([]*Page, error) {
 	return _listPage(true)
 }
@@ -272,9 +270,9 @@ func MustListPostArchives() []*QrArchive {
 
 func ListPostArchives() ([]*QrArchive, error) {
 	var archives []*QrArchive
-	//sql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
-	sql := `select strftime('%Y-%m',created_at) as month,count(*) as total from posts where is_published = ? group by month order by month desc`
-	rows, err := DB.Raw(sql, true).Rows()
+	//querysql := `select DATE_FORMAT(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	querysql := `select strftime('%Y-%m',created_at) as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	rows, err := DB.Raw(querysql, true).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -297,9 +295,9 @@ func ListPostByArchive(year, month string) ([]*Post, error) {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
-	//sql := `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc`
-	sql := `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc`
-	rows, err := DB.Raw(sql, condition, true).Rows()
+	//querysql := `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc`
+	querysql := `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc`
+	rows, err := DB.Raw(querysql, condition, true).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -487,11 +485,11 @@ func ListCommentByPostID(postId string) ([]*Comment, error) {
 	return comments, err
 }
 
-func GetComment(id interface{}) (*Comment, error) {
+/*func GetComment(id interface{}) (*Comment, error) {
 	var comment Comment
 	err := DB.First(&comment, id).Error
 	return &comment, err
-}
+}*/
 
 func CountComment() int {
 	var count int
@@ -572,8 +570,8 @@ func GetLinkById(id uint) (*Link, error) {
 	return &link, err
 }
 
-func GetLinkByUrl(url string) (*Link, error) {
+/*func GetLinkByUrl(url string) (*Link, error) {
 	var link Link
 	err := DB.Find(&link, "url = ?", url).Error
 	return &link, err
-}
+}*/
