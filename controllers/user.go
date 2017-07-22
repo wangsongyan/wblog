@@ -49,14 +49,6 @@ type GithubUserInfo struct {
 }
 
 func SigninGet(c *gin.Context) {
-	/*session := sessions.Default(c)
-	if session.Get("UserID") != nil {
-		c.Redirect(http.StatusMovedPermanently, "/admin/index")
-	} else {
-		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-			"authUrl": fmt.Sprintf(oauthCfg.AuthURL, oauthCfg.ClientId),
-		})
-	}*/
 	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 		"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
 	})
@@ -68,7 +60,7 @@ func SignupGet(c *gin.Context) {
 
 func LogoutGet(c *gin.Context) {
 	s := sessions.Default(c)
-	s.Delete("UserID")
+	s.Delete(SESSION_KEY)
 	s.Save()
 	c.Redirect(http.StatusSeeOther, "/signin")
 }
@@ -113,7 +105,7 @@ func SigninPost(c *gin.Context) {
 		user, err = models.GetUserByUsername(username)
 		if err == nil && user.Password == helpers.Md5(username+password) {
 			s := sessions.Default(c)
-			s.Set("UserID", user.ID)
+			s.Set(SESSION_KEY, user.ID)
 			s.Save()
 			if user.IsAdmin {
 				c.Redirect(http.StatusMovedPermanently, "/admin/index")
@@ -133,20 +125,20 @@ func SigninPost(c *gin.Context) {
 }
 
 func Oauth2Callback(c *gin.Context) {
-	fmt.Println(c.Request.Referer())
 	code := c.Query("code")
 	token, err := exchangeTokenByCode(code)
 	if err == nil {
 		var userInfo *GithubUserInfo
 		userInfo, err = getGithubUserInfoByAceessToken(token)
 		if err == nil {
-			fmt.Println(userInfo)
 			var user *models.User
-			if sessionUser, exists := c.Get("User"); exists {
+			if sessionUser, exists := c.Get(CONTEXT_USER_KEY); exists {
 				user, _ = sessionUser.(*models.User)
 				_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
 				if err1 != nil { // 未绑定
-					user.GithubLoginId = userInfo.Login
+					if user.IsAdmin {
+						user.GithubLoginId = userInfo.Login
+					}
 					user.AvatarUrl = userInfo.AvatarURL
 					user.GithubUrl = userInfo.HTMLURL
 					err = user.UpdateGithubUserInfo()
@@ -164,8 +156,8 @@ func Oauth2Callback(c *gin.Context) {
 
 			if err == nil {
 				s := sessions.Default(c)
-				s.Delete("UserID")
-				s.Set("UserID", user.ID)
+				s.Delete(SESSION_KEY)
+				s.Set(SESSION_KEY, user.ID)
 				s.Save()
 				if user.IsAdmin {
 					c.Redirect(http.StatusMovedPermanently, "/admin/index")
@@ -213,7 +205,7 @@ func getGithubUserInfoByAceessToken(token string) (*GithubUserInfo, error) {
 }
 
 func ProfileGet(c *gin.Context) {
-	sessionUser, exists := c.Get("User")
+	sessionUser, exists := c.Get(CONTEXT_USER_KEY)
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":     sessionUser,
@@ -226,7 +218,7 @@ func ProfileGet(c *gin.Context) {
 func ProfileUpdate(c *gin.Context) {
 	avatarUrl := c.PostForm("avatarUrl")
 	nickName := c.PostForm("nickName")
-	sessionUser, _ := c.Get("User")
+	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
 	if user, ok := sessionUser.(*models.User); ok {
 		err := user.UpdateProfile(avatarUrl, nickName)
 		if err == nil {
@@ -245,7 +237,7 @@ func ProfileUpdate(c *gin.Context) {
 
 func BindEmail(c *gin.Context) {
 	email := c.PostForm("email")
-	sessionUser, _ := c.Get("User")
+	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
 	if user, ok := sessionUser.(*models.User); ok {
 		if len(user.Email) > 0 {
 			c.JSON(http.StatusOK, gin.H{
@@ -270,7 +262,7 @@ func BindEmail(c *gin.Context) {
 }
 
 func UnbindEmail(c *gin.Context) {
-	sessionUser, _ := c.Get("User")
+	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
 	if user, ok := sessionUser.(*models.User); ok {
 		if len(user.Email) == 0 {
 			c.JSON(http.StatusOK, gin.H{
@@ -287,7 +279,7 @@ func UnbindEmail(c *gin.Context) {
 }
 
 func UnbindGithub(c *gin.Context) {
-	sessionUser, _ := c.Get("User")
+	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
 	if user, ok := sessionUser.(*models.User); ok {
 		if len(user.GithubLoginId) == 0 {
 			c.JSON(http.StatusOK, gin.H{
@@ -306,7 +298,7 @@ func UnbindGithub(c *gin.Context) {
 
 func UserIndex(c *gin.Context) {
 	users, _ := models.ListUsers()
-	user, _ := c.Get("User")
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/user.html", gin.H{
 		"users":    users,
 		"user":     user,

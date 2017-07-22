@@ -18,7 +18,7 @@ func PostGet(c *gin.Context) {
 		post.Update()
 		post.Tags, _ = models.ListTagByPostId(id)
 		post.Comments, _ = models.ListCommentByPostID(id)
-		user, _ := c.Get("User")
+		user, _ := c.Get(CONTEXT_USER_KEY)
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
 			"post":    post,
 			"user":    user,
@@ -160,7 +160,7 @@ func PostDelete(c *gin.Context) {
 
 func PostIndex(c *gin.Context) {
 	posts, _ := models.ListPost("", false)
-	user, _ := c.Get("User")
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":    posts,
 		"Active":   "posts",

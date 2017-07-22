@@ -11,7 +11,7 @@ import (
 
 func LinkIndex(c *gin.Context) {
 	links, _ := models.ListLinks()
-	user, _ := c.Get("User")
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/link.html", gin.H{
 		"links":    links,
 		"user":     user,

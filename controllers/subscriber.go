@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strings"
 	"time"
@@ -130,7 +131,7 @@ func GetUnSubcribeUrl(subscriber *models.Subscriber) (string, error) {
 	subscriber.SecretKey = uuid
 	subscriber.Signature = signature
 	err := subscriber.Update()
-	return fmt.Sprintf("%s/unsubscribe?sid=%s", "http://localhost:8090", signature), err
+	return fmt.Sprintf("%s/unsubscribe?sid=%s", system.GetConfiguration().Domain, signature), err
 }
 
 // 向订阅者发送邮件
@@ -149,7 +150,7 @@ func sendEmailToSubscribers(subject, body string) {
 
 func SubscriberIndex(c *gin.Context) {
 	subscribers, _ := models.ListSubscriber(false)
-	user, _ := c.Get("User")
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/subscriber.html", gin.H{
 		"subscribers": subscribers,
 		"user":        user,

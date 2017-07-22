@@ -17,7 +17,7 @@ func IndexGet(c *gin.Context) {
 			post.Tags, _ = models.ListTagByPostId(strconv.FormatUint(uint64(post.ID), 10))
 			post.Body = policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
 		}
-		user, _ := c.Get("User")
+		user, _ := c.Get(CONTEXT_USER_KEY)
 		c.HTML(http.StatusOK, "index/index.html", gin.H{
 			"posts":    posts,
 			"tags":     models.MustListTag(),
@@ -31,7 +31,7 @@ func IndexGet(c *gin.Context) {
 }
 
 func AdminIndex(c *gin.Context) {
-	user, _ := c.Get("User")
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/index.html", gin.H{
 		"pageCount":    models.CountPage(),
 		"postCount":    models.CountPost(),
