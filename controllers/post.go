@@ -1,10 +1,8 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/models"
-	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strconv"
 	"strings"
@@ -22,7 +20,7 @@ func PostGet(c *gin.Context) {
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
 			"post":    post,
 			"user":    user,
-			"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
+			"authUrl": generateGithubAuthUrl(c),
 		})
 	} else {
 		Handle404(c)
