@@ -50,7 +50,7 @@ type GithubUserInfo struct {
 
 func SigninGet(c *gin.Context) {
 	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-		"authUrl": fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
+		"authUrl": generateGithubAuthUrl(c),
 	})
 }
 
@@ -127,6 +127,15 @@ func SigninPost(c *gin.Context) {
 
 func Oauth2Callback(c *gin.Context) {
 	code := c.Query("code")
+	state := c.Query("state")
+	session := sessions.Default(c)
+	if len(state) == 0 || state != session.Get(SESSION_GITHUB_STATE) {
+		c.Abort()
+		return
+	} else {
+		session.Delete(SESSION_GITHUB_STATE)
+		session.Save()
+	}
 	token, err := exchangeTokenByCode(code)
 	if err == nil {
 		var userInfo *GithubUserInfo
@@ -210,7 +219,7 @@ func ProfileGet(c *gin.Context) {
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":     sessionUser,
-			"authUrl":  fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId),
+			"authUrl":  generateGithubAuthUrl(c),
 			"comments": models.MustListUnreadComment(),
 		})
 	}

@@ -5,14 +5,15 @@ qiniu_fileserver:
 qiniu_bucket:
 github_clientid:
 github_clientsecret:
-github_authurl: https://github.com/login/oauth/authorize?client_id=%s&scope=user:email
+github_authurl: https://github.com/login/oauth/authorize?client_id=%s&scope=user:email&state=%s
+# 与github配置的回调地址一致
 github_redirecturl: http://localhost:8090/oauth2callback
 github_tokenurl: https://github.com/login/oauth/access_token
 github_scope:
 smtp_username:
 smtp_password:
-smtp_host: smtp.163.com:25
+smtp_host:
 session_secret: wblog
-domain: http://blog.wangsy.net
+domain:
 public: static
 addr: :8090
