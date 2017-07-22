@@ -27,6 +27,6 @@ func sendMail(to, subject, body string) error {
 	return helpers.SendToMail(c.SmtpUsername, c.SmtpPassword, c.SmtpHost, to, subject, body, "html")
 }
 
-func __sendMail(to, subject, body string) error {
+/*func __sendMail(to, subject, body string) error {
 	return nil
-}
+}*/

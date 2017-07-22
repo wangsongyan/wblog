@@ -78,12 +78,13 @@ func LinkGet(c *gin.Context) {
 	id := c.Param("id")
 	_id, _ := strconv.ParseInt(id, 10, 64)
 	link, err := models.GetLinkById(uint(_id))
-	fmt.Println(err)
 	if err == nil {
 		link.View++
 		link.Update()
+		c.Redirect(http.StatusFound, link.Url)
+	} else {
+		c.AbortWithStatus(http.StatusInternalServerError)
 	}
-	c.Redirect(http.StatusFound, link.Url)
 }
 
 func LinkDelete(c *gin.Context) {
@@ -91,15 +92,10 @@ func LinkDelete(c *gin.Context) {
 	var err error
 	_id, err := strconv.ParseUint(id, 10, 64)
 	if err == nil {
-		if len(id) > 0 {
-			link := new(models.Link)
-			link.ID = uint(_id)
-			err = link.Delete()
-		} else {
-			err = errors.New("null id to delete")
-		}
+		link := new(models.Link)
+		link.ID = uint(_id)
+		err = link.Delete()
 	}
-
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{
 			"succeed": true,
@@ -110,5 +106,4 @@ func LinkDelete(c *gin.Context) {
 			"message": err.Error(),
 		})
 	}
-
 }

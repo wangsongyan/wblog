@@ -63,7 +63,7 @@ func main() {
 
 	router.GET("/page/:id", controllers.PageGet)
 	router.GET("/post/:id", controllers.PostGet)
-	router.GET("/tag/:id", controllers.TagGet)
+	router.GET("/tag/:tag", controllers.TagGet)
 	router.GET("/archives/:year/:month", controllers.ArchiveGet)
 
 	router.GET("/link/:id", controllers.LinkGet)

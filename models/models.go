@@ -158,10 +158,14 @@ func GetPageById(id string) (*Page, error) {
 	return &page, err
 }
 func ListPublishedPage() ([]*Page, error) {
-	return ListPage(true)
+	return _listPage(true)
 }
 
-func ListPage(published bool) ([]*Page, error) {
+func ListAllPage() ([]*Page, error) {
+	return _listPage(false)
+}
+
+func _listPage(published bool) ([]*Page, error) {
 	var pages []*Page
 	var err error
 	if published {
@@ -205,10 +209,14 @@ func (post *Post) Excerpt() template.HTML {
 }
 
 func ListPublishedPost(tag string) ([]*Post, error) {
-	return ListPost(tag, true)
+	return _listPost(tag, true)
 }
 
-func ListPost(tag string, published bool) ([]*Post, error) {
+func ListAllPost(tag string) ([]*Post, error) {
+	return _listPost(tag, false)
+}
+
+func _listPost(tag string, published bool) ([]*Post, error) {
 	var posts []*Post
 	var err error
 	if len(tag) > 0 {
@@ -457,7 +465,7 @@ func MustListUnreadComment() []*Comment {
 }
 
 func (comment *Comment) Delete() error {
-	return DB.Delete(comment).Error
+	return DB.Delete(comment, "user_id = ?", comment.UserID).Error
 }
 
 func ListCommentByPostID(postId string) ([]*Comment, error) {

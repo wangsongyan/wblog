@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/alimoeeny/gooauth2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -60,7 +61,7 @@ func SignupGet(c *gin.Context) {
 
 func LogoutGet(c *gin.Context) {
 	s := sessions.Default(c)
-	s.Delete(SESSION_KEY)
+	s.Clear()
 	s.Save()
 	c.Redirect(http.StatusSeeOther, "/signin")
 }
@@ -76,8 +77,8 @@ func SignupPost(c *gin.Context) {
 		IsAdmin:   true,
 	}
 	var err error
-	if len(user.Email) == 0 /*|| len(user.Telephone) == 0 */ || len(user.Password) == 0 {
-		err = errors.New("error parameter.")
+	if len(user.Email) == 0 || len(user.Password) == 0 {
+		err = errors.New("email or password cannot be null.")
 	} else {
 		user.Password = helpers.Md5(user.Email + user.Password)
 		err = user.Insert()
@@ -105,6 +106,7 @@ func SigninPost(c *gin.Context) {
 		user, err = models.GetUserByUsername(username)
 		if err == nil && user.Password == helpers.Md5(username+password) {
 			s := sessions.Default(c)
+			s.Clear()
 			s.Set(SESSION_KEY, user.ID)
 			s.Save()
 			if user.IsAdmin {
@@ -117,7 +119,7 @@ func SigninPost(c *gin.Context) {
 			err = errors.New("invalid username or password.")
 		}
 	} else {
-		err = errors.New("error parameter.")
+		err = errors.New("username or password cannot be null.")
 	}
 	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 		"message": err.Error(),
@@ -156,7 +158,7 @@ func Oauth2Callback(c *gin.Context) {
 
 			if err == nil {
 				s := sessions.Default(c)
-				s.Delete(SESSION_KEY)
+				s.Clear()
 				s.Set(SESSION_KEY, user.ID)
 				s.Save()
 				if user.IsAdmin {
@@ -168,7 +170,7 @@ func Oauth2Callback(c *gin.Context) {
 			}
 		}
 	}
-	log.Println(err)
+	logrus.Error(err)
 	c.Redirect(http.StatusMovedPermanently, "/signin")
 }
 
