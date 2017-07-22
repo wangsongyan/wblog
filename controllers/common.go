@@ -7,10 +7,13 @@ import (
 	"net/http"
 )
 
+const (
+	SESSION_KEY      = "UserID" // session key
+	CONTEXT_USER_KEY = "User"   // context user key
+)
+
 func Handle404(c *gin.Context) {
-	c.HTML(http.StatusNotFound, "errors/error.html", gin.H{
-		"message": "Sorry,I lost myself!",
-	})
+	HandleMessage(c, "Sorry,I lost myself!")
 }
 
 func HandleMessage(c *gin.Context, message string) {

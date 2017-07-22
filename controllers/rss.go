@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/Sirupsen/logrus"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/wangsongyan/wblog/models"
@@ -37,5 +38,7 @@ func RssGet(c *gin.Context) {
 	rss, err := feed.ToRss()
 	if err == nil {
 		c.Writer.WriteString(rss)
+	} else {
+		logrus.Error(err)
 	}
 }

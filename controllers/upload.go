@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/system"
 	"mime/multipart"
@@ -79,7 +78,6 @@ func uploadFile(file multipart.File) (string, error) {
 	var ret PutRet
 	err := uploader.PutWithoutKey(nil, &ret, token, file, size, nil)
 	if err != nil {
-		fmt.Println("io.Put failed:", err)
 		return "", err
 	}
 	return ret.Key, nil

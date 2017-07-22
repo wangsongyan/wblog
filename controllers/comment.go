@@ -10,7 +10,7 @@ import (
 
 func CommentPost(c *gin.Context) {
 	s := sessions.Default(c)
-	sessionUserID := s.Get("UserID")
+	sessionUserID := s.Get(SESSION_KEY)
 	postId := c.PostForm("postId")
 	pid, _ := strconv.ParseUint(postId, 10, 64)
 	if sessionUserID != nil {
@@ -29,7 +29,7 @@ func CommentPost(c *gin.Context) {
 
 func CommentDelete(c *gin.Context) {
 	s := sessions.Default(c)
-	sessionUserID := s.Get("UserID")
+	sessionUserID := s.Get(SESSION_KEY)
 	commentId := c.Param("id")
 	cid, _ := strconv.ParseUint(commentId, 10, 64)
 	var err error
