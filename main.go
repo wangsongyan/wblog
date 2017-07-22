@@ -61,6 +61,9 @@ func main() {
 	router.GET("/logout", controllers.LogoutGet)
 	router.GET("/oauth2callback", controllers.Oauth2Callback)
 
+	// captcha
+	router.GET("/captcha", controllers.CaptchaGet)
+
 	visitor := router.Group("/visitor")
 	visitor.Use(AuthRequired())
 	{

@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"github.com/dchest/captcha"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"
@@ -13,18 +15,45 @@ func CommentPost(c *gin.Context) {
 	sessionUserID := s.Get(SESSION_KEY)
 	userId, _ := sessionUserID.(uint)
 
+	verifyCode := c.PostForm("verifyCode")
+	captchaId := s.Get(SESSION_CAPTCHA)
+	s.Delete(SESSION_CAPTCHA)
+	_captchaId, _ := captchaId.(string)
+	if !captcha.VerifyString(_captchaId, verifyCode) {
+		c.JSON(http.StatusOK, gin.H{
+			"succeed": false,
+			"message": "error verifycode",
+		})
+		return
+	}
+
+	var err error
 	postId := c.PostForm("postId")
 	content := c.PostForm("content")
-	pid, err := strconv.ParseUint(postId, 10, 64)
-	if err == nil {
-		comment := &models.Comment{
-			PostID:  uint(pid),
-			Content: content,
-			UserID:  userId,
-		}
-		comment.Insert()
+	if len(content) == 0 {
+		err = errors.New("content cannot be empty.")
 	}
-	c.Redirect(http.StatusMovedPermanently, "/post/"+postId)
+	if err == nil {
+		pid, err := strconv.ParseUint(postId, 10, 64)
+		if err == nil {
+			comment := &models.Comment{
+				PostID:  uint(pid),
+				Content: content,
+				UserID:  userId,
+			}
+			err = comment.Insert()
+		}
+	}
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"succeed": true,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"succeed": false,
+			"message": err.Error(),
+		})
+	}
 }
 
 func CommentDelete(c *gin.Context) {
