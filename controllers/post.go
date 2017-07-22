@@ -60,7 +60,7 @@ func PostCreate(c *gin.Context) {
 				}
 			}
 		}
-		c.Redirect(http.StatusMovedPermanently, "/post/"+strconv.FormatUint(uint64(post.ID), 10))
+		c.Redirect(http.StatusMovedPermanently, "/admin/post")
 	} else {
 		c.HTML(http.StatusOK, "post/new.html", gin.H{
 			"post":    post,
@@ -78,7 +78,7 @@ func PostEdit(c *gin.Context) {
 			"post": post,
 		})
 	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		Handle404(c)
 	}
 }
 
@@ -116,7 +116,7 @@ func PostUpdate(c *gin.Context) {
 					}
 				}
 			}
-			c.Redirect(http.StatusMovedPermanently, "/post/"+id)
+			c.Redirect(http.StatusMovedPermanently, "/admin/post")
 		} else {
 			c.HTML(http.StatusOK, "post/modify.html", gin.H{
 				"post":    post,
@@ -124,7 +124,7 @@ func PostUpdate(c *gin.Context) {
 			})
 		}
 	} else {
-		c.AbortWithStatus(http.StatusNotFound)
+		Handle404(c)
 	}
 }
 
@@ -155,11 +155,14 @@ func PostDelete(c *gin.Context) {
 			return
 		}
 	}
-	c.AbortWithStatus(http.StatusInternalServerError)
+	c.JSON(http.StatusOK, gin.H{
+		"succeed": false,
+		"message": err.Error(),
+	})
 }
 
 func PostIndex(c *gin.Context) {
-	posts, _ := models.ListPost("", false)
+	posts, _ := models.ListAllPost("")
 	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":    posts,

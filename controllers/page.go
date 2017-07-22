@@ -37,7 +37,7 @@ func PageCreate(c *gin.Context) {
 	}
 	err := page.Insert()
 	if err == nil {
-		c.Redirect(http.StatusMovedPermanently, "/page/"+strconv.FormatUint(uint64(page.ID), 10))
+		c.Redirect(http.StatusMovedPermanently, "/admin/page")
 	} else {
 		c.HTML(http.StatusOK, "page/new.html", gin.H{
 			"message": err.Error(),
@@ -70,13 +70,11 @@ func PageUpdate(c *gin.Context) {
 		page.ID = uint(pid)
 		err = page.Update()
 		if err == nil {
-			c.Redirect(http.StatusMovedPermanently, "/page/"+id)
-		} else {
-			// TODO
+			c.Redirect(http.StatusMovedPermanently, "/admin/page")
+			return
 		}
-	} else {
-		c.AbortWithError(http.StatusInternalServerError, err)
 	}
+	c.AbortWithError(http.StatusInternalServerError, err)
 }
 
 func PagePublish(c *gin.Context) {
@@ -97,7 +95,7 @@ func PageDelete(c *gin.Context) {
 	if err == nil {
 		page := &models.Page{}
 		page.ID = uint(pid)
-		page.Delete()
+		err = page.Delete()
 		if err == nil {
 			c.JSON(http.StatusOK, gin.H{
 				"succeed": true,
@@ -109,7 +107,7 @@ func PageDelete(c *gin.Context) {
 }
 
 func PageIndex(c *gin.Context) {
-	pages, _ := models.ListPage(false)
+	pages, _ := models.ListAllPage()
 	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "admin/page.html", gin.H{
 		"pages":    pages,
