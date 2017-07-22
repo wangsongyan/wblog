@@ -43,6 +43,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/highlight.js/latest/styles/github.min.css" />
     <script>hljs.initHighlightingOnLoad();</script>
 
+    <script src="http://malsup.github.com/jquery.form.js"></script>
+
     <style>
         .user-image {
             float: left;
@@ -157,10 +159,19 @@
             {{if not .user}}
                 <a href="{{.authUrl}}">登录发表评论</a>
             {{else}}
-            <form role="form" action="/visitor/new_comment" method="post">
+                <div id="messagebox" class="alert alert-danger" style="display: none;" role="alert"></div>
+            <form id="commentForm" role="form" action="/visitor/new_comment" method="post">
                 <input name="postId" type="hidden" value="{{.post.ID}}">
                 <div class="form-group">
-                    <textarea name="content" class="form-control"></textarea>
+                    <textarea name="content" class="form-control" id="inputContent" placeholder="评论"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">
+                        <input name="verifyCode" class="form-control" placeholder="验证码">
+                    </div>
+                    <div class="col-md-4">
+                        <img src="/captcha" class="j-verifycode"/>
+                    </div>
                 </div>
                 <div class="pull-right">
                     <button type="submit" class="btn btn-primary">评论</button>
@@ -181,6 +192,33 @@
 <!-- /.container -->
 
 {{template "footer.html"}}
+
+<script type="text/javascript">
+    $(document).on("click",".j-verifycode",function(){
+        var path =$(this).attr("src");
+        var index = path.indexOf("?");
+        path = ( index == -1 )? (path+"?" + new Date()) : path.substring(0,index+1)+ new Date();
+        $(this).attr("src", path);
+    });
+
+    $(document).ready(function() {
+        // bind 'myForm' and provide a simple callback function
+        $('#commentForm').ajaxForm(function(data) {
+            if(data.succeed){
+                    window.location.href = window.location.href
+            }else{
+                $('#messagebox').show();
+                setTimeout(hideMessagebox,2000);
+                $('#messagebox').html(data.message);
+                $("input[name='verifyCode']").val('');
+            }
+        });
+    });
+
+    function hideMessagebox(){
+        $('#messagebox').hide();
+    }
+</script>
 
 </body>
 
