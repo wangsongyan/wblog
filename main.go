@@ -138,6 +138,9 @@ func main() {
 		// comment
 		authorized.POST("/comment/:id", controllers.CommentRead)
 		authorized.POST("/read_all", controllers.CommentReadAll)
+
+		// backup
+		authorized.POST("/backup", controllers.BackupPost)
 	}
 
 	router.Run(system.GetConfiguration().Addr)
