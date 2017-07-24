@@ -42,6 +42,7 @@ func main() {
 
 	//Periodic tasks
 	gocron.Every(1).Day().Do(system.CreateXMLSitemap)
+	gocron.Every(7).Days().Do(controllers.Backup)
 	gocron.Start()
 
 	router.Static("/static", "./static")

@@ -3,8 +3,8 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"github.com/jinzhu/gorm"
 	//_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
