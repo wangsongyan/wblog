@@ -56,6 +56,11 @@
 			"Rev": "980c96bf412b6e28177bcf6b7105640cf04137d6"
 		},
 		{
+			"ImportPath": "github.com/dchest/captcha",
+			"Comment": "weekly.2012-03-04-20-g6a29415",
+			"Rev": "6a29415a8364ec2971fdc62d9e415ed53fc20410"
+		},
+		{
 			"ImportPath": "github.com/denisbakhtin/sitemap",
 			"Rev": "3b73dfe0369c7a2df68052d0a13d74187ced97f5"
 		},
@@ -152,54 +157,6 @@
 			"Rev": "ff09b135c25aae272398c51a07235b90a75aa4f0"
 		},
 		{
-			"ImportPath": "github.com/qiniu/api.v7/api",
-			"Comment": "v7.0.5-61-g9c12a67",
-			"Rev": "9c12a67868f8f94d6a75dd6bb59b095db8d40d77"
-		},
-		{
-			"ImportPath": "github.com/qiniu/api.v7/auth/qbox",
-			"Comment": "v7.0.5-61-g9c12a67",
-			"Rev": "9c12a67868f8f94d6a75dd6bb59b095db8d40d77"
-		},
-		{
-			"ImportPath": "github.com/qiniu/api.v7/conf",
-			"Comment": "v7.0.5-61-g9c12a67",
-			"Rev": "9c12a67868f8f94d6a75dd6bb59b095db8d40d77"
-		},
-		{
-			"ImportPath": "github.com/qiniu/api.v7/kodocli",
-			"Comment": "v7.0.5-61-g9c12a67",
-			"Rev": "9c12a67868f8f94d6a75dd6bb59b095db8d40d77"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/bytes.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/bytes.v7/seekable",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/ctype.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/log.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/rpc.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/url.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
-			"ImportPath": "github.com/qiniu/x/xlog.v7",
-			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
-		},
-		{
 			"ImportPath": "github.com/russross/blackfriday",
 			"Comment": "v1.4-49-g067529f",
 			"Rev": "067529f716f4c3f5e37c8c95ddd59df1007290ae"
@@ -259,6 +216,16 @@
 			"Rev": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b"
 		},
 		{
+			"ImportPath": "qiniupkg.com/api.v7/api",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
+			"ImportPath": "qiniupkg.com/api.v7/auth/qbox",
+			"Comment": "v7.0.5-30-g48f271a",
+			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
+		},
+		{
 			"ImportPath": "qiniupkg.com/api.v7/conf",
 			"Comment": "v7.0.5-30-g48f271a",
 			"Rev": "48f271a8237148110dce1043ba34338adf01f7af"
@@ -278,11 +245,31 @@
 			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
 		},
 		{
+			"ImportPath": "qiniupkg.com/x/bytes.v7/seekable",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/ctype.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
 			"ImportPath": "qiniupkg.com/x/log.v7",
 			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
 		},
 		{
 			"ImportPath": "qiniupkg.com/x/reqid.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/rpc.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/url.v7",
+			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
+		},
+		{
+			"ImportPath": "qiniupkg.com/x/xlog.v7",
 			"Rev": "f512abcf45ab4e2ba0fd4784c57b53d495997d66"
 		}
 	]
