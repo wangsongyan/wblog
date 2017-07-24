@@ -52,6 +52,7 @@ go run main.go
 1. 修改conf.yaml，设置signup_enabled: true
 2. 访问http://xxx.xxx/signup 注册管理员账号
 3. 修改conf.yaml，设置signup_enabled: false
+
 ### 注意事项
 1. 如果需求上传图片功能请自行申请七牛云存储空间，并修改配置文件填写
     - qiniu_accesskey
