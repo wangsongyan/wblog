@@ -49,9 +49,7 @@ type GithubUserInfo struct {
 }
 
 func SigninGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-		"authUrl": generateGithubAuthUrl(c),
-	})
+	c.HTML(http.StatusOK, "auth/signin.html", nil)
 }
 
 func SignupGet(c *gin.Context) {
@@ -219,7 +217,6 @@ func ProfileGet(c *gin.Context) {
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":     sessionUser,
-			"authUrl":  generateGithubAuthUrl(c),
 			"comments": models.MustListUnreadComment(),
 		})
 	}
