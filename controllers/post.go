@@ -18,9 +18,8 @@ func PostGet(c *gin.Context) {
 		post.Comments, _ = models.ListCommentByPostID(id)
 		user, _ := c.Get(CONTEXT_USER_KEY)
 		c.HTML(http.StatusOK, "post/display.html", gin.H{
-			"post":    post,
-			"user":    user,
-			"authUrl": generateGithubAuthUrl(c),
+			"post": post,
+			"user": user,
 		})
 	} else {
 		Handle404(c)

@@ -61,6 +61,7 @@ func main() {
 	router.POST("/signin", controllers.SigninPost)
 	router.GET("/logout", controllers.LogoutGet)
 	router.GET("/oauth2callback", controllers.Oauth2Callback)
+	router.GET("/auth/:authType", controllers.AuthGet)
 
 	// captcha
 	router.GET("/captcha", controllers.CaptchaGet)
@@ -174,7 +175,7 @@ func setSessions(router *gin.Engine) {
 	config := system.GetConfiguration()
 	//https://github.com/gin-gonic/contrib/tree/master/sessions
 	store := sessions.NewCookieStore([]byte(config.SessionSecret))
-	store.Options(sessions.Options{HttpOnly: true, MaxAge: 7 * 86400}) //Also set Secure: true if using SSL, you should though
+	store.Options(sessions.Options{HttpOnly: true, MaxAge: 7 * 86400, Path: "/"}) //Also set Secure: true if using SSL, you should though
 	router.Use(sessions.Sessions("gin-session", store))
 	//https://github.com/utrack/gin-csrf
 	/*router.Use(csrf.Middleware(csrf.Options{
