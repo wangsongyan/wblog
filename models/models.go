@@ -69,6 +69,7 @@ type User struct {
 	IsAdmin       bool      //是否是管理员
 	AvatarUrl     string    // 头像链接
 	NickName      string    // 昵称
+	LockState     bool      `gorm:"default:'0'"` //锁定状态
 }
 
 // table comments
@@ -429,6 +430,12 @@ func (user *User) UpdateGithubUserInfo() error {
 		"github_login_id": githubLoginId,
 		"avatar_url":      user.AvatarUrl,
 		"github_url":      user.GithubUrl,
+	}).Error
+}
+
+func (user *User) Lock() error {
+	return DB.Model(user).Update(map[string]interface{}{
+		"lock_state": user.LockState,
 	}).Error
 }
 
