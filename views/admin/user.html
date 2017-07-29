@@ -68,6 +68,7 @@
                                     <th>邮箱</th>
                                     <th>github</th>
                                     <th>注册时间</th>
+                                    <th>状态</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -77,6 +78,13 @@
                                     <td>{{.Email}}</td>
                                     <td>{{.GithubLoginId}}</td>
                                     <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
+                                    <td>
+                                        {{if not .LockState}}
+                                        <a href="javascript:void(0);" class="btn btn-danger btnlock" data-href="/admin/user/{{.ID}}/lock">锁定</a>
+                                        {{else}}
+                                        <a href="javascript:void(0);" class="btn btn-primary btnlock" data-href="/admin/user/{{.ID}}/lock">解除锁定</a>
+                                        {{end}}
+                                    </td>
                                 </tr>
                                 {{end}}
                                 </tfoot>
@@ -119,6 +127,16 @@
             'autoWidth'   : false
         })
     })
+
+    $(document).ready(function(){
+        $('.btnlock').on('click',function(e){
+           $.post($(e.target).data("href"),{},function(data){
+               if(data.succeed){
+                   window.location.href = window.location.href;
+               }
+           },'json');
+        });
+    });
 </script>
 </body>
 </html>

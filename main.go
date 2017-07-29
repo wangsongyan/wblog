@@ -118,6 +118,7 @@ func main() {
 
 		//
 		authorized.GET("/user", controllers.UserIndex)
+		authorized.POST("/user/:id/lock", controllers.UserLock)
 
 		// profile
 		authorized.GET("/profile", controllers.ProfileGet)

@@ -13,6 +13,7 @@ import (
 	"github.com/wangsongyan/wblog/system"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type GithubUserInfo struct {
@@ -101,17 +102,22 @@ func SigninPost(c *gin.Context) {
 	if len(username) > 0 && len(password) > 0 {
 		var user *models.User
 		user, err = models.GetUserByUsername(username)
+		fmt.Println(user, err)
 		if err == nil && user.Password == helpers.Md5(username+password) {
-			s := sessions.Default(c)
-			s.Clear()
-			s.Set(SESSION_KEY, user.ID)
-			s.Save()
-			if user.IsAdmin {
-				c.Redirect(http.StatusMovedPermanently, "/admin/index")
+			if !user.LockState {
+				s := sessions.Default(c)
+				s.Clear()
+				s.Set(SESSION_KEY, user.ID)
+				s.Save()
+				if user.IsAdmin {
+					c.Redirect(http.StatusMovedPermanently, "/admin/index")
+				} else {
+					c.Redirect(http.StatusMovedPermanently, "/")
+				}
+				return
 			} else {
-				c.Redirect(http.StatusMovedPermanently, "/")
+				err = errors.New("Your account have been locked.")
 			}
-			return
 		} else {
 			err = errors.New("invalid username or password.")
 		}
@@ -160,6 +166,13 @@ func Oauth2Callback(c *gin.Context) {
 					GithubUrl:     userInfo.HTMLURL,
 				}
 				user, err = user.FirstOrCreate()
+				if err == nil {
+					if user.LockState {
+						err = errors.New("Your account have been locked.")
+						HandleMessage(c, "Your account have been locked.")
+						return
+					}
+				}
 			}
 
 			if err == nil {
@@ -311,4 +324,24 @@ func UserIndex(c *gin.Context) {
 		"user":     user,
 		"comments": models.MustListUnreadComment(),
 	})
+}
+
+func UserLock(c *gin.Context) {
+	id := c.Param("id")
+	_id, _ := strconv.ParseUint(id, 10, 64)
+	user, err := models.GetUser(uint(_id))
+	if err == nil {
+		user.LockState = !user.LockState
+		err = user.Lock()
+	}
+	if err == nil {
+		c.JSON(http.StatusOK, gin.H{
+			"succeed": true,
+		})
+	} else {
+		c.JSON(http.StatusOK, gin.H{
+			"succeed": false,
+			"message": err.Error(),
+		})
+	}
 }
