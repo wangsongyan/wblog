@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"github.com/wangsongyan/wblog/models"
+	"strings"
 	"time"
 )
 
@@ -34,4 +36,16 @@ func IsEven(number int) bool {
 
 func Add(a1, a2 int) int {
 	return a1 + a2
+}
+
+func ListTag() string {
+	tags, err := models.ListTag()
+	if err == nil {
+		tagNames := make([]string, 0)
+		for _, tag := range tags {
+			tagNames = append(tagNames, tag.Name)
+		}
+		return strings.Join(tagNames, ",")
+	}
+	return ""
 }
