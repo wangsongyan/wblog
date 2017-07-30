@@ -8,7 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
-	"github.com/wangsongyan/wblog/helpers"
+	//"github.com/wangsongyan/wblog/helpers"
 	"html/template"
 	"strconv"
 	"time"
@@ -203,7 +203,11 @@ func (post *Post) Excerpt() template.HTML {
 	//you can sanitize, cut it down, add images, etc
 	policy := bluemonday.StrictPolicy() //remove all html tags
 	sanitized := policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
-	excerpt := template.HTML(helpers.Truncate(sanitized, 300) + "...")
+	runes := []rune(sanitized)
+	if len(runes) > 300 {
+		sanitized = string(runes[:300])
+	}
+	excerpt := template.HTML(sanitized + "...")
 	return excerpt
 }
 
@@ -360,6 +364,12 @@ func CountTag() int {
 	var count int
 	DB.Model(&Tag{}).Count(&count)
 	return count
+}
+
+func ListAllTag() ([]*Tag, error) {
+	var tags []*Tag
+	err := DB.Model(&Tag{}).Find(&tags).Error
+	return tags, err
 }
 
 // post_tags
