@@ -17,3 +17,4 @@ session_secret: wblog
 domain:
 public: static
 addr: :8090
+backup_key:

@@ -143,6 +143,7 @@ func main() {
 
 		// backup
 		authorized.POST("/backup", controllers.BackupPost)
+		authorized.POST("/restore", controllers.RestorePost)
 	}
 
 	router.Run(system.GetConfiguration().Addr)

@@ -25,6 +25,7 @@ type Configuration struct {
 	Domain             string `yaml:"domain"`         //domain
 	Public             string `yaml:"public"`         //public
 	Addr               string `yaml:"addr"`           //addr
+	BackupKey          string `yaml:"backup_key"`     //backup_key
 }
 
 var configuration *Configuration
