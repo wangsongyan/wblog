@@ -17,7 +17,6 @@
 -wblog
     |-conf 配置文件目录
     |-controllers 控制器目录
-    |-Godeps godep配置目录
     |-helpders 公共方法目录
     |-models 数据库访问目录
     |-static 静态资源目录

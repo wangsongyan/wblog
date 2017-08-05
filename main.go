@@ -160,16 +160,8 @@ func setTemplate(engine *gin.Engine) {
 		"listtag":    helpers.ListTag,
 	}
 
-	if gin.IsDebugging() {
-		render := helpers.New()
-		render.FuncMap = funcMap
-		render.Glob = "views/**/*"
-		engine.HTMLRender = render
-	} else {
-		t, err := template.New("").Funcs(funcMap).ParseGlob("views/**/*")
-		engine.SetHTMLTemplate(template.Must(t, err))
-	}
-
+	engine.SetFuncMap(funcMap)
+	engine.LoadHTMLGlob("views/**/*")
 }
 
 //setSessions initializes sessions & csrf middlewares
