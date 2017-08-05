@@ -13,7 +13,7 @@ func PostGet(c *gin.Context) {
 	post, err := models.GetPostById(id)
 	if err == nil && post.IsPublished {
 		post.View++
-		post.Update()
+		post.UpdateView()
 		post.Tags, _ = models.ListTagByPostId(id)
 		post.Comments, _ = models.ListCommentByPostID(id)
 		user, _ := c.Get(CONTEXT_USER_KEY)
