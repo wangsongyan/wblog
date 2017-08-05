@@ -12,7 +12,7 @@ func PageGet(c *gin.Context) {
 	page, err := models.GetPageById(id)
 	if err == nil && page.IsPublished {
 		page.View++
-		page.Update()
+		page.UpdateView()
 		c.HTML(http.StatusOK, "page/display.html", gin.H{
 			"page": page,
 		})

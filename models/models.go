@@ -138,7 +138,12 @@ func (page *Page) Update() error {
 		"title":        page.Title,
 		"body":         page.Body,
 		"is_published": page.IsPublished,
-		"view":         page.View,
+	}).Error
+}
+
+func (page *Page) UpdateView() error {
+	return DB.Model(page).Updates(map[string]interface{}{
+		"view": page.View,
 	}).Error
 }
 
@@ -191,7 +196,12 @@ func (post *Post) Update() error {
 		"title":        post.Title,
 		"body":         post.Body,
 		"is_published": post.IsPublished,
-		"view":         post.View,
+	}).Error
+}
+
+func (post *Post) UpdateView() error {
+	return DB.Model(post).Updates(map[string]interface{}{
+		"view": post.View,
 	}).Error
 }
 
