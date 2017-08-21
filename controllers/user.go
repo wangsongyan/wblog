@@ -143,7 +143,7 @@ func Oauth2Callback(c *gin.Context) {
 	token, err := exchangeTokenByCode(code)
 	if err == nil {
 		var userInfo *GithubUserInfo
-		userInfo, err = getGithubUserInfoByAceessToken(token)
+		userInfo, err = getGithubUserInfoByAccessToken(token)
 		if err == nil {
 			var user *models.User
 			if sessionUser, exists := c.Get(CONTEXT_USER_KEY); exists {
@@ -210,17 +210,18 @@ func exchangeTokenByCode(code string) (string, error) {
 	return "", err
 }
 
-func getGithubUserInfoByAceessToken(token string) (*GithubUserInfo, error) {
+func getGithubUserInfoByAccessToken(token string) (*GithubUserInfo, error) {
 	resp, err := http.Get(fmt.Sprintf("https://api.github.com/user?access_token=%s", token))
+	if err != nil {
+		return nil, err
+	}
 	defer resp.Body.Close()
+	var body []byte
+	body, err = ioutil.ReadAll(resp.Body)
 	if err == nil {
-		var body []byte
-		body, err = ioutil.ReadAll(resp.Body)
-		if err == nil {
-			var userInfo GithubUserInfo
-			err = json.Unmarshal(body, &userInfo)
-			return &userInfo, err
-		}
+		var userInfo GithubUserInfo
+		err = json.Unmarshal(body, &userInfo)
+		return &userInfo, err
 	}
 	return nil, err
 }
