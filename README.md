@@ -41,9 +41,15 @@
 - [x] 邮箱订阅功能
 
 ## 安装部署
+本项目使用govendor管理依赖包，[govendor](https://github.com/kardianos/govendor)安装方法
 ```
-go get -u -v github.com/wangsongyan/wblog
-cd $GOPATH/src/github.com/wangsongyan/wblog
+go get -u github.com/kardianos/govendor
+```
+
+```
+git clone github.com/wangsongyan/wblog
+cd wblog
+govendor sync
 go run main.go
 ```
 
@@ -70,8 +76,8 @@ go run main.go
 
 ## 效果图
 
-![file](http://os1jc62ua.bkt.clouddn.com/Fk8qAplQM00lZSQH06jh8W6t9jsv)
+![file](screenshots/index.png)
 
-![file](http://os1jc62ua.bkt.clouddn.com/FlXjba1ll3H70PaPe_kGf3Yxdgrz)
+![file](screenshots/blog.png)
 
-![file](http://os1jc62ua.bkt.clouddn.com/QQ%E6%88%AA%E5%9B%BE20171116144407.png)
+![file](screenshots/admin.png)
