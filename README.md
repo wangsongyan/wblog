@@ -65,14 +65,14 @@ go run main.go
     - qiniu_secretkey
     - qiniu_fileserver 七牛访问地址
     - qiniu_bucket 空间名称
-2. 如果需要github登录评论功能请自行注册github oauthapp，并修改配置文件填写
+2. 如果需要github登录评论功能请自行注册[github oauthapp](https://github.com/settings/developers)，并修改配置文件填写
     - github_clientid
     - github_clientsecret
     - github_redirecturl
 3. 如果需要使用邮件订阅功能，请自行填写
     - smtp_username
     - smtp_password
-    - smtp_host
+    - smtp_host,例如：smtp.163.com:25
 
 ## 效果图
 
