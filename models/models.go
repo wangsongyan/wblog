@@ -3,15 +3,16 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	//_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/microcosm-cc/bluemonday"
-	"github.com/russross/blackfriday"
-	//"github.com/wangsongyan/wblog/helpers"
 	"html/template"
 	"strconv"
 	"time"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/go-sql-driver/mysql"
+	"github.com/microcosm-cc/bluemonday"
+	"github.com/russross/blackfriday"
+	"github.com/wangsongyan/wblog/system"
 )
 
 // I don't need soft delete,so I use customized BaseModel instead gorm.Model
@@ -116,7 +117,8 @@ type QrArchive struct {
 var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
-	db, err := gorm.Open("sqlite3", "wblog.db?_loc=Asia/Shanghai")
+
+	db, err := gorm.Open("sqlite3", system.GetConfiguration().DSN)
 	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	if err == nil {
 		DB = db

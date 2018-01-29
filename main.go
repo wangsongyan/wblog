@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
@@ -13,17 +14,24 @@ import (
 	"net/http"
 )
 
-func init() {
-	logger, err := seelog.LoggerFromConfigAsFile("conf/seelog.xml")
+func main() {
+
+	configFilePath := flag.String("C", "conf/conf.yaml", "config file path")
+	logConfigPath := flag.String("L", "conf/seelog.xml", "log config file path")
+	flag.Parse()
+
+	logger, err := seelog.LoggerFromConfigAsFile(*logConfigPath)
 	if err != nil {
-		seelog.Critical("err parsing config log file", err)
+		seelog.Critical("err parsing seelog config file", err)
 		return
 	}
 	seelog.ReplaceLogger(logger)
 	defer seelog.Flush()
-}
 
-func main() {
+	if err := system.LoadConfiguration(*configFilePath); err != nil {
+		seelog.Critical("err parsing config log file", err)
+		return
+	}
 
 	db, err := models.InitDB()
 	if err != nil {
@@ -31,7 +39,6 @@ func main() {
 		return
 	}
 	defer db.Close()
-	system.LoadConfiguration("conf/conf.yaml")
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -41,7 +48,7 @@ func main() {
 	router.Use(SharedData())
 
 	//Periodic tasks
-	gocron.Every(1).Day().Do(system.CreateXMLSitemap)
+	gocron.Every(1).Day().Do(controllers.CreateXMLSitemap)
 	gocron.Every(7).Days().Do(controllers.Backup)
 	gocron.Start()
 

@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/wangsongyan/wblog/models"
 )
 
 func PostGet(c *gin.Context) {

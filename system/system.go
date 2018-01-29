@@ -1,7 +1,6 @@
 package system
 
 import (
-	"github.com/Sirupsen/logrus"
 	"github.com/go-yaml/yaml"
 	"io/ioutil"
 )
@@ -26,22 +25,23 @@ type Configuration struct {
 	Public             string `yaml:"public"`         //public
 	Addr               string `yaml:"addr"`           //addr
 	BackupKey          string `yaml:"backup_key"`     //backup_key
+	DSN                string `yaml:"dsn"`            //database dsn
 }
 
 var configuration *Configuration
 
-func LoadConfiguration(path string) {
+func LoadConfiguration(path string) error {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		logrus.Fatalf("error: %v", err)
+		return err
 	}
 	var config Configuration
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		logrus.Fatalf("error: %v", err)
+		return err
 	}
 	configuration = &config
-	logrus.Debugf("config load succeessfully:%v", configuration)
+	return err
 }
 
 func GetConfiguration() *Configuration {
