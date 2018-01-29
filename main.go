@@ -2,6 +2,14 @@ package main
 
 import (
 	"flag"
+	"html/template"
+	"net/http"
+
+	"path/filepath"
+
+	"os"
+	"strings"
+
 	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
@@ -10,8 +18,6 @@ import (
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
-	"html/template"
-	"net/http"
 )
 
 func main() {
@@ -52,7 +58,7 @@ func main() {
 	gocron.Every(7).Days().Do(controllers.Backup)
 	gocron.Start()
 
-	router.Static("/static", "./static")
+	router.Static("/static", filepath.Join(getCurrentDirectory(), "./static"))
 
 	router.NoRoute(controllers.Handle404)
 	router.GET("/", controllers.IndexGet)
@@ -169,7 +175,7 @@ func setTemplate(engine *gin.Engine) {
 	}
 
 	engine.SetFuncMap(funcMap)
-	engine.LoadHTMLGlob("views/**/*")
+	engine.LoadHTMLGlob(filepath.Join(getCurrentDirectory(), "./views/**/*"))
 }
 
 //setSessions initializes sessions & csrf middlewares
@@ -240,3 +246,15 @@ func AuthRequired() gin.HandlerFunc {
 		c.Abort()
 	}
 }
+
+func getCurrentDirectory() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		seelog.Critical(err)
+	}
+	return strings.Replace(dir, "\\", "/", -1)
+}
+
+//func getCurrentDirectory() string {
+//	return ""
+//}
