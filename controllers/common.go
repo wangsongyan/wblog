@@ -1,10 +1,17 @@
 package controllers
 
 import (
+	"fmt"
+	"net/http"
+	"os"
+	"path"
+	"time"
+
+	"github.com/denisbakhtin/sitemap"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/helpers"
+	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
-	"net/http"
 )
 
 const (
@@ -32,3 +39,50 @@ func sendMail(to, subject, body string) error {
 /*func __sendMail(to, subject, body string) error {
 	return nil
 }*/
+
+func CreateXMLSitemap() {
+	configuration := system.GetConfiguration()
+	folder := path.Join(configuration.Public, "sitemap")
+	os.MkdirAll(folder, os.ModePerm)
+	domain := configuration.Domain
+	now := time.Now()
+	items := make([]sitemap.Item, 0)
+
+	items = append(items, sitemap.Item{
+		Loc:        domain,
+		LastMod:    now,
+		Changefreq: "daily",
+		Priority:   1,
+	})
+
+	posts, err := models.ListPublishedPost("")
+	if err == nil {
+		for _, post := range posts {
+			items = append(items, sitemap.Item{
+				Loc:        fmt.Sprintf("%s/post/%d", domain, post.ID),
+				LastMod:    post.UpdatedAt,
+				Changefreq: "weekly",
+				Priority:   0.9,
+			})
+		}
+	}
+
+	pages, err := models.ListPublishedPage()
+	if err == nil {
+		for _, page := range pages {
+			items = append(items, sitemap.Item{
+				Loc:        fmt.Sprintf("%s/page/%d", domain, page.ID),
+				LastMod:    page.UpdatedAt,
+				Changefreq: "monthly",
+				Priority:   0.8,
+			})
+		}
+	}
+
+	if err := sitemap.SiteMap(path.Join(folder, "sitemap1.xml.gz"), items); err != nil {
+		return
+	}
+	if err := sitemap.SiteMapIndex(folder, "sitemap_index.xml", domain+"/static/sitemap/"); err != nil {
+		return
+	}
+}
