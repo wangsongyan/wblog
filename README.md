@@ -73,6 +73,7 @@ go run main.go
     - smtp_username
     - smtp_password
     - smtp_host,例如：smtp.163.com:25
+4. Goland运行时，修改main.go getCurrentDirectory方法返回""
 
 ## 效果图
 
