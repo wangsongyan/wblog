@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
+	"time"
+
+	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
-	"time"
 )
 
 func RssGet(c *gin.Context) {
@@ -39,6 +40,6 @@ func RssGet(c *gin.Context) {
 	if err == nil {
 		c.Writer.WriteString(rss)
 	} else {
-		logrus.Error(err)
+		seelog.Error(err)
 	}
 }
