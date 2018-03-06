@@ -65,7 +65,7 @@
                                 <thead>
                                 <tr>
                                     <th>ID</th>
-                                    <th>邮箱</th>
+                                    {{/*<th>邮箱</th>*/}}
                                     <th>github</th>
                                     <th>注册时间</th>
                                     <th>状态</th>
@@ -75,8 +75,8 @@
                                 {{range .users}}
                                 <tr>
                                     <td>{{.ID}}</td>
-                                    <td>{{.Email}}</td>
-                                    <td>{{.GithubLoginId}}</td>
+                                   {{/* <td>{{.Email}}</td>*/}}
+                                    <td><a href="https://github.com/{{.GithubLoginId}}" target="_blank">{{.GithubLoginId}}</a></td>
                                     <td>{{dateFormat .CreatedAt "06-01-02 15:04"}}</td>
                                     <td>
                                         {{if not .LockState}}
