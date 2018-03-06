@@ -43,7 +43,7 @@
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <h1>
-                <small>订阅管理<a class="btn btn-primary" href="#"><span class="glyphicon glyphicon-plus"></span>群发</a></small>
+                <small>订阅管理<a class="btn btn-primary" href="javascript:void(0);" data-href="/admin/new_batchmail" data-toggle="modal" data-target="#confirm-delete"><span class="glyphicon glyphicon-plus"></span>群发</a></small>
             </h1>
             <ol class="breadcrumb">
                 <li><a href="/admin/index"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -87,7 +87,7 @@
                                     <td>
                                         {{if .VerifyState}}
                                         {{if .SubscribeState}}
-                                        <a href="#" target="_blank" class="btn btn-primary">发邮件</a>
+                                        <a href="javascript:void(0);" class="btn btn-primary btnsend" data-href="/admin/new_mail?userId={{.ID}}" data-toggle="modal" data-target="#confirm-delete">发邮件</a>
                                         {{end}}
                                         {{end}}
                                     </td>
@@ -115,14 +115,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                请确认
+                发送邮件
             </div>
             <div class="modal-body">
-                确认删除该记录吗？
+                <form id="form_data" role="form" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">邮件主题</label>
+                        <div class="col-sm-10">
+                            <input name="subject" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">邮件内容</label>
+                        <div class="col-sm-10">
+                            <textarea name="content" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                <a class="btn btn-danger btn-ok">删除记录</a>
+                <a class="btn btn-primary btn-ok">发送</a>
             </div>
         </div>
     </div>
@@ -150,23 +163,33 @@
         });
     });
 
-    function pushlish(id){
-        $.post("/admin/page/"+id+"/publish",{},function(result){
-            console.log(result);
-            if(result.succeed){
-                window.location.href = window.location.href;
-            }
-        },"json")
-    }
-
     $('#confirm-delete').on('show.bs.modal', function(e) {
+        $(this).find('.btn-ok').unbind("click");
         $(this).find('.btn-ok').click(function(){
-            $.post($(e.relatedTarget).data('href'),{},function(reuslt){
-                window.location.href = window.location.href;
-            },'json');
+            var subject = $('input[name="subject"]').val();
+            var content = $('textarea[name="content"]').val();
 
+            if(!subject){
+                alert("请填写主题");
+                return;
+            }
+            if(!content){
+                alert("请填写内容");
+                return;
+            }
+
+            $.post($(e.relatedTarget).data('href'),{subject:subject,content:content},function(result){
+                console.log(result);
+                if(result.succeed){
+                    alert("发送成功");
+                }else{
+                    alert(result.msg);
+                }
+                //window.location.href = window.location.href;
+            },'json');
         });
     });
+
 </script>
 </body>
 </html>
