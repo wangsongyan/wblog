@@ -157,6 +157,10 @@ func main() {
 		// backup
 		authorized.POST("/backup", controllers.BackupPost)
 		authorized.POST("/restore", controllers.RestorePost)
+
+		// mail
+		authorized.POST("/new_mail", controllers.SendMail)
+		authorized.POST("/new_batchmail", controllers.SendBatchMail)
 	}
 
 	router.Run(system.GetConfiguration().Addr)

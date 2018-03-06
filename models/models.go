@@ -569,6 +569,12 @@ func GetSubscriberBySignature(key string) (*Subscriber, error) {
 	return &subscriber, err
 }
 
+func GetSubscriberById(id uint) (*Subscriber, error) {
+	var subscriber Subscriber
+	err := DB.First(&subscriber, id).Error
+	return &subscriber, err
+}
+
 // Link
 func (link *Link) Insert() error {
 	return DB.FirstOrCreate(link, "url = ?", link.Url).Error
