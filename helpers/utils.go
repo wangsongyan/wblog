@@ -6,12 +6,14 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/pkg/errors"
-	"github.com/snluu/uuid"
 	"io"
 	"net/smtp"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/pkg/errors"
+	"github.com/snluu/uuid"
 )
 
 // 计算字符串的md5值
@@ -31,6 +33,11 @@ func Truncate(s string, n int) string {
 
 func UUID() string {
 	return uuid.Rand().Hex()
+}
+
+func GetCurrentTime() time.Time {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	return time.Now().In(loc)
 }
 
 func SendToMail(user, password, host, to, subject, body, mailtype string) error {

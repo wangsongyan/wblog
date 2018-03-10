@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-	"time"
 
 	"github.com/denisbakhtin/sitemap"
 	"github.com/gin-gonic/gin"
@@ -45,7 +44,7 @@ func CreateXMLSitemap() {
 	folder := path.Join(configuration.Public, "sitemap")
 	os.MkdirAll(folder, os.ModePerm)
 	domain := configuration.Domain
-	now := time.Now()
+	now := helpers.GetCurrentTime()
 	items := make([]sitemap.Item, 0)
 
 	items = append(items, sitemap.Item{
