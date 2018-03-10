@@ -3,18 +3,18 @@ package controllers
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+
 	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/system"
-	"io/ioutil"
-	"net/http"
-	"os"
 	"qiniupkg.com/api.v7/conf"
 	"qiniupkg.com/api.v7/kodo"
 	"qiniupkg.com/api.v7/kodocli"
-	"time"
 )
 
 func BackupPost(c *gin.Context) {
@@ -99,7 +99,7 @@ func Backup() error {
 		uploader := kodocli.NewUploader(zone, nil)
 
 		var ret PutRet
-		fileName := fmt.Sprintf("wblog_%s.db", time.Now().Format("20060102150405"))
+		fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
 		err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
 		if err == nil {
 			seelog.Debug("backup succeefully.")

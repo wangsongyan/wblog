@@ -2,14 +2,15 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
-	"net/http"
-	"strings"
-	"time"
 )
 
 func SubscribeGet(c *gin.Context) {
@@ -26,7 +27,7 @@ func Subscribe(c *gin.Context) {
 		var subscriber *models.Subscriber
 		subscriber, err = models.GetSubscriberByEmail(mail)
 		if err == nil {
-			if !subscriber.VerifyState && time.Now().After(subscriber.OutTime) { //激活链接超时
+			if !subscriber.VerifyState && helpers.GetCurrentTime().After(subscriber.OutTime) { //激活链接超时
 				err = sendActiveEmail(subscriber)
 				if err == nil {
 					count, _ := models.CountSubscriber()
@@ -75,7 +76,7 @@ func Subscribe(c *gin.Context) {
 func sendActiveEmail(subscriber *models.Subscriber) error {
 	uuid := helpers.UUID()
 	duration, _ := time.ParseDuration("30m")
-	subscriber.OutTime = time.Now().Add(duration)
+	subscriber.OutTime = helpers.GetCurrentTime().Add(duration)
 	subscriber.SecretKey = uuid
 	signature := helpers.Md5(subscriber.Email + uuid + subscriber.OutTime.Format("20060102150405"))
 	subscriber.Signature = signature
@@ -93,9 +94,9 @@ func ActiveSubsciber(c *gin.Context) {
 		var subscriber *models.Subscriber
 		subscriber, err = models.GetSubscriberBySignature(sid)
 		if err == nil {
-			if time.Now().Before(subscriber.OutTime) {
+			if helpers.GetCurrentTime().Before(subscriber.OutTime) {
 				subscriber.VerifyState = true
-				subscriber.OutTime = time.Now()
+				subscriber.OutTime = helpers.GetCurrentTime()
 				err = subscriber.Update()
 				if err == nil {
 					HandleMessage(c, "激活成功！")
