@@ -47,7 +47,7 @@ go get -u github.com/kardianos/govendor
 ```
 
 ```
-git clone github.com/wangsongyan/wblog
+git clone https://github.com/wangsongyan/wblog
 cd wblog
 govendor sync
 go run main.go
