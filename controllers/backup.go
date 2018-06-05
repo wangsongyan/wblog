@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"net/url"
+
 	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -67,48 +69,54 @@ func RestorePost(c *gin.Context) {
 
 func Backup() error {
 	var err error
-	if exists, _ := helpers.PathExists("wblog.db"); exists {
-		seelog.Debug("start backup...")
+	var u *url.URL
+	u, err = url.Parse(system.GetConfiguration().DSN)
+	if err == nil {
+		if exists, _ := helpers.PathExists(u.Path); exists {
+			seelog.Debug("start backup...")
 
-		data, err := ioutil.ReadFile("wblog.db")
-		if err != nil {
-			seelog.Error(err)
-			return err
-		}
-		encryptData, err := helpers.Encrypt(data, system.GetConfiguration().BackupKey)
-		if err != nil {
-			seelog.Error(err)
-			return err
-		}
+			data, err := ioutil.ReadFile(u.Path)
+			if err != nil {
+				seelog.Error(err)
+				return err
+			}
+			encryptData, err := helpers.Encrypt(data, system.GetConfiguration().BackupKey)
+			if err != nil {
+				seelog.Error(err)
+				return err
+			}
 
-		conf.ACCESS_KEY = system.GetConfiguration().QiniuAccessKey
-		conf.SECRET_KEY = system.GetConfiguration().QiniuSecretKey
+			conf.ACCESS_KEY = system.GetConfiguration().QiniuAccessKey
+			conf.SECRET_KEY = system.GetConfiguration().QiniuSecretKey
 
-		// 创建一个Client
-		c := kodo.New(0, nil)
-		// 设置上传的策略
-		policy := &kodo.PutPolicy{
-			Scope: system.GetConfiguration().QiniuBucket,
-			//设置Token过期时间
-			Expires: 3600,
-		}
-		// 生成一个上传token
-		token := c.MakeUptoken(policy)
-		// 构建一个uploader
-		zone := 0
-		uploader := kodocli.NewUploader(zone, nil)
+			// 创建一个Client
+			c := kodo.New(0, nil)
+			// 设置上传的策略
+			policy := &kodo.PutPolicy{
+				Scope: system.GetConfiguration().QiniuBucket,
+				//设置Token过期时间
+				Expires: 3600,
+			}
+			// 生成一个上传token
+			token := c.MakeUptoken(policy)
+			// 构建一个uploader
+			zone := 0
+			uploader := kodocli.NewUploader(zone, nil)
 
-		var ret PutRet
-		fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
-		err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
-		if err == nil {
-			seelog.Debug("backup succeefully.")
+			var ret PutRet
+			fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
+			err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
+			if err == nil {
+				seelog.Debug("backup succeefully.")
+			} else {
+				seelog.Debugf("backup error:%v", err)
+			}
 		} else {
-			seelog.Debugf("backup error:%v", err)
+			err = errors.New("database file doesn't exists.")
+			seelog.Debug("database file doesn't exists.")
 		}
 	} else {
-		err = errors.New("database file doesn't exists.")
-		seelog.Debug("database file doesn't exists.")
+		seelog.Debug("parse dsn error:%v", err)
 	}
 	return err
 }
