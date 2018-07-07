@@ -20,3 +20,4 @@ addr: :8090
 backup_key:
 dsn: wblog.db?_loc=Asia/Shanghai
 #dsn: root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai
+notify_emails:

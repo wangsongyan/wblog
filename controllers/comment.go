@@ -1,13 +1,17 @@
 package controllers
 
 import (
+	"net/http"
+	"strconv"
+
+	"fmt"
+
 	"github.com/dchest/captcha"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/models"
-	"net/http"
-	"strconv"
+	"github.com/wangsongyan/wblog/system"
 )
 
 func CommentPost(c *gin.Context) {
@@ -33,6 +37,8 @@ func CommentPost(c *gin.Context) {
 	if len(content) == 0 {
 		err = errors.New("content cannot be empty.")
 	}
+	var post *models.Post
+	post, err = models.GetPostById(postId)
 	if err == nil {
 		pid, err := strconv.ParseUint(postId, 10, 64)
 		if err == nil {
@@ -45,6 +51,7 @@ func CommentPost(c *gin.Context) {
 		}
 	}
 	if err == nil {
+		NotifyEmail("[wblog]您有一条新评论", fmt.Sprintf("<a href=\"%s/post/%d\" target=\"_blank\">%s</a>:%s", system.GetConfiguration().Domain, post.ID, post.Title, content))
 		c.JSON(http.StatusOK, gin.H{
 			"succeed": true,
 		})

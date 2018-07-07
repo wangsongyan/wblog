@@ -1,8 +1,9 @@
 package system
 
 import (
-	"github.com/go-yaml/yaml"
 	"io/ioutil"
+
+	"github.com/go-yaml/yaml"
 )
 
 type Configuration struct {
@@ -26,6 +27,7 @@ type Configuration struct {
 	Addr               string `yaml:"addr"`           //addr
 	BackupKey          string `yaml:"backup_key"`     //backup_key
 	DSN                string `yaml:"dsn"`            //database dsn
+	NotifyEmails       string `yaml:"notify_emails"`  //notify_emails
 }
 
 var configuration *Configuration

@@ -6,6 +6,8 @@ import (
 	"os"
 	"path"
 
+	"strings"
+
 	"github.com/denisbakhtin/sitemap"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/helpers"
@@ -33,6 +35,23 @@ func HandleMessage(c *gin.Context, message string) {
 func sendMail(to, subject, body string) error {
 	c := system.GetConfiguration()
 	return helpers.SendToMail(c.SmtpUsername, c.SmtpPassword, c.SmtpHost, to, subject, body, "html")
+}
+
+func NotifyEmail(subject, body string) error {
+	notifyEmailsStr := system.GetConfiguration().NotifyEmails
+	if notifyEmailsStr != "" {
+		notifyEmails := strings.Split(notifyEmailsStr, ";")
+		emails := make([]string, 0)
+		for _, email := range notifyEmails {
+			if email != "" {
+				emails = append(emails, email)
+			}
+		}
+		if len(emails) > 0 {
+			return sendMail(strings.Join(emails, ";"), subject, body)
+		}
+	}
+	return nil
 }
 
 /*func __sendMail(to, subject, body string) error {
