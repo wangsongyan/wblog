@@ -34,12 +34,13 @@ type Page struct {
 // table posts
 type Post struct {
 	BaseModel
-	Title       string     // title
-	Body        string     // body
-	View        int        // view count
-	IsPublished bool       // published or not
-	Tags        []*Tag     `gorm:"-"` // tags of post
-	Comments    []*Comment `gorm:"-"` // comments of post
+	Title        string     // title
+	Body         string     // body
+	View         int        // view count
+	IsPublished  bool       // published or not
+	Tags         []*Tag     `gorm:"-"` // tags of post
+	Comments     []*Comment `gorm:"-"` // comments of post
+	CommentTotal int        `gorm:"-"` // count of comment
 }
 
 // table tags
@@ -122,7 +123,7 @@ func InitDB() (*gorm.DB, error) {
 	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	if err == nil {
 		DB = db
-		db.LogMode(true)
+		//db.LogMode(true)
 		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
 		db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 		return db, err
@@ -270,6 +271,38 @@ func _listPost(tag string, published bool, pageIndex, pageSize int) ([]*Post, er
 		}
 	}
 	return posts, err
+}
+
+func MustListMaxReadPost() (posts []*Post) {
+	posts, _ = ListMaxReadPost()
+	return
+}
+
+func ListMaxReadPost() (posts []*Post, err error) {
+	err = DB.Where("is_published = ?", true).Order("view desc").Limit(5).Find(&posts).Error
+	return
+}
+
+func MustListMaxCommentPost() (posts []*Post) {
+	posts, _ = ListMaxCommentPost()
+	return
+}
+
+func ListMaxCommentPost() (posts []*Post, err error) {
+	var (
+		rows *sql.Rows
+	)
+	rows, err = DB.Raw("select p.*,c.total comment_total from posts p inner join (select post_id,count(*) total from comments group by post_id) c on p.id = c.post_id order by c.total desc limit 5").Rows()
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var post Post
+		DB.ScanRows(rows, &post)
+		posts = append(posts, &post)
+	}
+	return
 }
 
 func CountPostByTag(tag string) (count int, err error) {

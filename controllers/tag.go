@@ -61,11 +61,13 @@ func TagGet(c *gin.Context) {
 		post.Body = policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
 	}
 	c.HTML(http.StatusOK, "index/index.html", gin.H{
-		"posts":     posts,
-		"tags":      models.MustListTag(),
-		"archives":  models.MustListPostArchives(),
-		"links":     models.MustListLinks(),
-		"pageIndex": pageIndex,
-		"totalPage": int(math.Ceil(float64(total) / float64(pageSize))),
+		"posts":          posts,
+		"tags":           models.MustListTag(),
+		"archives":       models.MustListPostArchives(),
+		"links":          models.MustListLinks(),
+		"pageIndex":      pageIndex,
+		"totalPage":      int(math.Ceil(float64(total) / float64(pageSize))),
+		"maxReadPosts":   models.MustListMaxReadPost(),
+		"maxCommentosts": models.MustListMaxCommentPost(),
 	})
 }
