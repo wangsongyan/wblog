@@ -193,6 +193,36 @@
             </div>
 
             <div class="well">
+                <h5><span class="glyphicon glyphicon-fire"></span> 阅读最多</h5>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="list-unstyled">
+                        {{range $key,$post:=.maxReadPosts}}
+                            <li><a href="/post/{{$post.ID}}">{{$post.Title}}({{$post.View}})</a></li>
+                        {{end}}
+                        </ul>
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- /.row -->
+            </div>
+
+            <div class="well">
+                <h5><span class="glyphicon glyphicon-comment"></span> 评论最多</h5>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="list-unstyled">
+                        {{range $key,$post:=.maxCommentPosts}}
+                            <li><a href="/post/{{$post.ID}}">{{$post.Title}}({{$post.CommentTotal}})</a></li>
+                        {{end}}
+                        </ul>
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- /.row -->
+            </div>
+
+            <div class="well">
                 <h5><span class="glyphicon glyphicon-link"></span> 友情链接</h5>
                 <div class="row">
                     <div class="col-lg-12">
