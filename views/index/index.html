@@ -74,7 +74,7 @@
                 <div style="margin-top: 10px">
                     <tr>
                         {{range $tagkey,$tagvalue:=$postvalue.Tags}}
-                        <a href="#" class="changeTag"
+                        <a href="/tag/{{$tagvalue.ID}}" class="changeTag"
                            style="color: #888888;text-decoration: none;">
                             # <span>{{$tagvalue.Name}}</span>&nbsp;&nbsp;
                         </a>
@@ -96,6 +96,22 @@
                     <a href="#">Newer &rarr;</a>
                 </li>
             </ul>-->
+
+            {{if le .pageIndex .totalPage}}
+            <ul class="pager">
+                {{if le .pageIndex 1}}
+                <li class="disabled"><a href="#">上一页</a></li>
+                {{else}}
+                <li class=""><a href="{{.path}}?page={{minus .pageIndex 1}}">上一页</a></li>
+                {{end}}
+                <li>{{ .pageIndex }}/ {{ .totalPage }}</li>
+                {{if lt .pageIndex .totalPage }}
+                    <li class=""><a href="{{.path}}?page={{add .pageIndex 1}}">下一页</a></li>
+                {{ else}}
+                    <li class="disabled"><a href="#">下一页</a></li>
+                {{end}}
+            </ul>
+             {{end}}
 
         </div>
 

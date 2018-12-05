@@ -28,7 +28,12 @@ type Configuration struct {
 	BackupKey          string `yaml:"backup_key"`     //backup_key
 	DSN                string `yaml:"dsn"`            //database dsn
 	NotifyEmails       string `yaml:"notify_emails"`  //notify_emails
+	PageSize           int    `yaml:"page_size"`      //page_size
 }
+
+const (
+	DEFAULT_PAGESIZE = 10
+)
 
 var configuration *Configuration
 
@@ -41,6 +46,9 @@ func LoadConfiguration(path string) error {
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
 		return err
+	}
+	if config.PageSize <= 0 {
+		config.PageSize = DEFAULT_PAGESIZE
 	}
 	configuration = &config
 	return err
