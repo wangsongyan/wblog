@@ -1,9 +1,10 @@
 package helpers
 
 import (
-	"github.com/wangsongyan/wblog/models"
 	"strings"
 	"time"
+
+	"github.com/wangsongyan/wblog/models"
 )
 
 // 格式化时间
@@ -36,6 +37,10 @@ func IsEven(number int) bool {
 
 func Add(a1, a2 int) int {
 	return a1 + a2
+}
+
+func Minus(a1, a2 int) int {
+	return a1 - a2
 }
 
 func ListTag() string {
