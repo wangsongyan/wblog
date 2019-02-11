@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/system"
-	"net/http"
 )
 
 func AuthGet(c *gin.Context) {

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"net/http"
 	"strconv"
 
 	"fmt"
@@ -9,12 +8,17 @@ import (
 	"github.com/dchest/captcha"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
 )
 
 func CommentPost(c *gin.Context) {
+	var (
+		err  error
+		res  = gin.H{}
+		post *models.Post
+	)
+	defer writeJSON(c, res)
 	s := sessions.Default(c)
 	sessionUserID := s.Get(SESSION_KEY)
 	userId, _ := sessionUserID.(uint)
@@ -24,80 +28,105 @@ func CommentPost(c *gin.Context) {
 	s.Delete(SESSION_CAPTCHA)
 	_captchaId, _ := captchaId.(string)
 	if !captcha.VerifyString(_captchaId, verifyCode) {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": "error verifycode",
-		})
+		res["message"] = "error verifycode"
 		return
 	}
 
-	var err error
 	postId := c.PostForm("postId")
 	content := c.PostForm("content")
 	if len(content) == 0 {
-		err = errors.New("content cannot be empty.")
+		res["message"] = "content cannot be empty."
+		return
 	}
-	var post *models.Post
+
 	post, err = models.GetPostById(postId)
-	if err == nil {
-		pid, err := strconv.ParseUint(postId, 10, 64)
-		if err == nil {
-			comment := &models.Comment{
-				PostID:  uint(pid),
-				Content: content,
-				UserID:  userId,
-			}
-			err = comment.Insert()
-		}
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
-	if err == nil {
-		NotifyEmail("[wblog]您有一条新评论", fmt.Sprintf("<a href=\"%s/post/%d\" target=\"_blank\">%s</a>:%s", system.GetConfiguration().Domain, post.ID, post.Title, content))
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": true,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+	pid, err := strconv.ParseUint(postId, 10, 64)
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	comment := &models.Comment{
+		PostID:  uint(pid),
+		Content: content,
+		UserID:  userId,
+	}
+	err = comment.Insert()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	NotifyEmail("[wblog]您有一条新评论", fmt.Sprintf("<a href=\"%s/post/%d\" target=\"_blank\">%s</a>:%s", system.GetConfiguration().Domain, post.ID, post.Title, content))
+	res["succeed"] = true
 }
 
 func CommentDelete(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+		cid uint64
+	)
+	defer writeJSON(c, res)
+
 	s := sessions.Default(c)
 	sessionUserID := s.Get(SESSION_KEY)
 	userId, _ := sessionUserID.(uint)
 
 	commentId := c.Param("id")
-	cid, err := strconv.ParseUint(commentId, 10, 64)
-	if err == nil {
-		comment := &models.Comment{
-			UserID: uint(userId),
-		}
-		comment.ID = uint(cid)
-		err = comment.Delete()
+	cid, err = strconv.ParseUint(commentId, 10, 64)
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": err == nil,
-	})
+	comment := &models.Comment{
+		UserID: uint(userId),
+	}
+	comment.ID = uint(cid)
+	err = comment.Delete()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func CommentRead(c *gin.Context) {
-	id := c.Param("id")
-	_id, err := strconv.ParseUint(id, 10, 64)
-	if err == nil {
-		comment := new(models.Comment)
-		comment.ID = uint(_id)
-		err = comment.Update()
+	var (
+		id  string
+		_id uint64
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
+	id = c.Param("id")
+	_id, err = strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": err == nil,
-	})
+	comment := new(models.Comment)
+	comment.ID = uint(_id)
+	err = comment.Update()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func CommentReadAll(c *gin.Context) {
-	err := models.SetAllCommentRead()
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": err == nil,
-	})
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
+	err = models.SetAllCommentRead()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }

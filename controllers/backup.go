@@ -5,118 +5,118 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
-
 	"net/url"
+	"os"
 
 	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/qiniu/api.v7/auth/qbox"
+	"github.com/qiniu/api.v7/storage"
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/system"
-	"qiniupkg.com/api.v7/conf"
-	"qiniupkg.com/api.v7/kodo"
-	"qiniupkg.com/api.v7/kodocli"
 )
 
 func BackupPost(c *gin.Context) {
-	err := Backup()
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": true,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
+	err = Backup()
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	res["succeed"] = true
 }
 
 func RestorePost(c *gin.Context) {
-	fileName := c.PostForm("fileName")
-	var err error
-	if len(fileName) > 0 {
-		fileUrl := system.GetConfiguration().QiniuFileServer + fileName
-		var resp *http.Response
-		resp, err = http.Get(fileUrl)
-		if err == nil {
-			defer resp.Body.Close()
-			var data []byte
-			data, err = ioutil.ReadAll(resp.Body)
-			if err == nil {
-				data, err = helpers.Decrypt(data, system.GetConfiguration().BackupKey)
-				if err == nil {
-					err = ioutil.WriteFile(fileName, data, os.ModePerm)
-				}
-			}
-		}
-	} else {
-		err = errors.New("fileName cannot be empty.")
+	var (
+		fileName  string
+		fileUrl   string
+		err       error
+		res       = gin.H{}
+		resp      *http.Response
+		bodyBytes []byte
+	)
+	defer writeJSON(c, res)
+	fileName = c.PostForm("fileName")
+	if fileName == "" {
+		res["message"] = "fileName cannot be empty."
+		return
 	}
+	fileUrl = system.GetConfiguration().QiniuFileServer + fileName
+	resp, err = http.Get(fileUrl)
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	defer resp.Body.Close()
 
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": true,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+	bodyBytes, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	bodyBytes, err = helpers.Decrypt(bodyBytes, system.GetConfiguration().BackupKey)
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	err = ioutil.WriteFile(fileName, bodyBytes, os.ModePerm)
+	if err == nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
-func Backup() error {
-	var err error
-	var u *url.URL
+func Backup() (err error) {
+	var (
+		u           *url.URL
+		exist       bool
+		ret         PutRet
+		bodyBytes   []byte
+		encryptData []byte
+	)
 	u, err = url.Parse(system.GetConfiguration().DSN)
-	if err == nil {
-		if exists, _ := helpers.PathExists(u.Path); exists {
-			seelog.Debug("start backup...")
-
-			data, err := ioutil.ReadFile(u.Path)
-			if err != nil {
-				seelog.Error(err)
-				return err
-			}
-			encryptData, err := helpers.Encrypt(data, system.GetConfiguration().BackupKey)
-			if err != nil {
-				seelog.Error(err)
-				return err
-			}
-
-			conf.ACCESS_KEY = system.GetConfiguration().QiniuAccessKey
-			conf.SECRET_KEY = system.GetConfiguration().QiniuSecretKey
-
-			// 创建一个Client
-			c := kodo.New(0, nil)
-			// 设置上传的策略
-			policy := &kodo.PutPolicy{
-				Scope: system.GetConfiguration().QiniuBucket,
-				//设置Token过期时间
-				Expires: 3600,
-			}
-			// 生成一个上传token
-			token := c.MakeUptoken(policy)
-			// 构建一个uploader
-			zone := 0
-			uploader := kodocli.NewUploader(zone, nil)
-
-			var ret PutRet
-			fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
-			err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
-			if err == nil {
-				seelog.Debug("backup succeefully.")
-			} else {
-				seelog.Debugf("backup error:%v", err)
-			}
-		} else {
-			err = errors.New("database file doesn't exists.")
-			seelog.Debug("database file doesn't exists.")
-		}
-	} else {
+	if err != nil {
 		seelog.Debug("parse dsn error:%v", err)
+		return
 	}
+	exist, _ = helpers.PathExists(u.Path)
+	if !exist {
+		err = errors.New("database file doesn't exists.")
+		seelog.Debug("database file doesn't exists.")
+		return
+	}
+	seelog.Debug("start backup...")
+	bodyBytes, err = ioutil.ReadFile(u.Path)
+	if err != nil {
+		seelog.Error(err)
+		return
+	}
+	encryptData, err = helpers.Encrypt(bodyBytes, system.GetConfiguration().BackupKey)
+	if err != nil {
+		seelog.Error(err)
+		return
+	}
+
+	putPolicy := storage.PutPolicy{
+		Scope: system.GetConfiguration().QiniuBucket,
+	}
+	mac := qbox.NewMac(system.GetConfiguration().QiniuAccessKey, system.GetConfiguration().QiniuSecretKey)
+	token := putPolicy.UploadToken(mac)
+	cfg := storage.Config{}
+	uploader := storage.NewFormUploader(&cfg)
+
+	fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
+	err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
+	if err != nil {
+		seelog.Debugf("backup error:%v", err)
+		return
+	}
+	seelog.Debug("backup succeefully.")
 	return err
 }

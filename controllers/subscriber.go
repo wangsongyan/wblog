@@ -73,61 +73,68 @@ func Subscribe(c *gin.Context) {
 	})
 }
 
-func sendActiveEmail(subscriber *models.Subscriber) error {
+func sendActiveEmail(subscriber *models.Subscriber) (err error) {
 	uuid := helpers.UUID()
 	duration, _ := time.ParseDuration("30m")
 	subscriber.OutTime = helpers.GetCurrentTime().Add(duration)
 	subscriber.SecretKey = uuid
 	signature := helpers.Md5(subscriber.Email + uuid + subscriber.OutTime.Format("20060102150405"))
 	subscriber.Signature = signature
-	err := sendMail(subscriber.Email, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", system.GetConfiguration().Domain, signature))
-	if err == nil {
-		err = subscriber.Update()
+	err = sendMail(subscriber.Email, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", system.GetConfiguration().Domain, signature))
+	if err != nil {
+		return
 	}
-	return err
+	err = subscriber.Update()
+	return
 }
 
-func ActiveSubsciber(c *gin.Context) {
+func ActiveSubscriber(c *gin.Context) {
+	var (
+		err        error
+		subscriber *models.Subscriber
+	)
 	sid := c.Query("sid")
-	var err error
-	if len(sid) > 0 {
-		var subscriber *models.Subscriber
-		subscriber, err = models.GetSubscriberBySignature(sid)
-		if err == nil {
-			if helpers.GetCurrentTime().Before(subscriber.OutTime) {
-				subscriber.VerifyState = true
-				subscriber.OutTime = helpers.GetCurrentTime()
-				err = subscriber.Update()
-				if err == nil {
-					HandleMessage(c, "激活成功！")
-					return
-				}
-			} else {
-				err = errors.New("激活链接已过期，请重新获取！")
-			}
-		} else {
-			err = errors.New("激活链接有误，请重新获取！")
-		}
-	} else {
-		err = errors.New("激活链接有误，请重新获取！")
+	if sid == "" {
+		HandleMessage(c, "激活链接有误，请重新获取！")
+		return
 	}
-	HandleMessage(c, err.Error())
+	subscriber, err = models.GetSubscriberBySignature(sid)
+	if err != nil {
+		HandleMessage(c, "激活链接有误，请重新获取！")
+		return
+	}
+	if !helpers.GetCurrentTime().Before(subscriber.OutTime) {
+		HandleMessage(c, "激活链接已过期，请重新获取！")
+		return
+	}
+	subscriber.VerifyState = true
+	subscriber.OutTime = helpers.GetCurrentTime()
+	err = subscriber.Update()
+	if err != nil {
+		HandleMessage(c, fmt.Sprintf("激活失败！%s", err.Error()))
+		return
+	}
+	HandleMessage(c, "激活成功！")
 }
 
 func UnSubscribe(c *gin.Context) {
 	sid := c.Query("sid")
-	if len(sid) > 0 {
-		subscriber, err := models.GetSubscriberBySignature(sid)
-		if err == nil && subscriber.VerifyState && subscriber.SubscribeState {
-			subscriber.SubscribeState = false
-			err = subscriber.Update()
-			if err == nil {
-				HandleMessage(c, "Unscribe Succeessful!")
-				return
-			}
-		}
+	if sid == "" {
+		HandleMessage(c, "Internal Server Error!")
+		return
 	}
-	HandleMessage(c, "Internal Server Error!")
+	subscriber, err := models.GetSubscriberBySignature(sid)
+	if err != nil || !subscriber.VerifyState || !subscriber.SubscribeState {
+		HandleMessage(c, "Unscribe failed.")
+		return
+	}
+	subscriber.SubscribeState = false
+	err = subscriber.Update()
+	if err == nil {
+		HandleMessage(c, fmt.Sprintf("Unscribe failed.%s", err.Error()))
+		return
+	}
+	HandleMessage(c, "Unscribe Succeessful!")
 }
 
 func GetUnSubcribeUrl(subscriber *models.Subscriber) (string, error) {
@@ -139,20 +146,24 @@ func GetUnSubcribeUrl(subscriber *models.Subscriber) (string, error) {
 	return fmt.Sprintf("%s/unsubscribe?sid=%s", system.GetConfiguration().Domain, signature), err
 }
 
-func sendEmailToSubscribers(subject, body string) error {
-	subscribers, err := models.ListSubscriber(true)
-	if err == nil {
-		emails := make([]string, 0)
-		for _, subscriber := range subscribers {
-			emails = append(emails, subscriber.Email)
-		}
-		if len(emails) > 0 {
-			err = sendMail(strings.Join(emails, ";"), subject, body)
-		} else {
-			err = errors.New("no subscribers!")
-		}
+func sendEmailToSubscribers(subject, body string) (err error) {
+	var (
+		subscribers []*models.Subscriber
+		emails      = make([]string, 0)
+	)
+	subscribers, err = models.ListSubscriber(true)
+	if err != nil {
+		return
 	}
-	return err
+	for _, subscriber := range subscribers {
+		emails = append(emails, subscriber.Email)
+	}
+	if len(emails) == 0 {
+		err = errors.New("no subscribers!")
+		return
+	}
+	err = sendMail(strings.Join(emails, ";"), subject, body)
+	return
 }
 
 func SubscriberIndex(c *gin.Context) {
@@ -167,23 +178,22 @@ func SubscriberIndex(c *gin.Context) {
 
 // 邮箱为空时，发送给所有订阅者
 func SubscriberPost(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	mail := c.PostForm("mail")
 	subject := c.PostForm("subject")
 	body := c.PostForm("body")
-	var err error
 	if len(mail) > 0 {
 		err = sendMail(mail, subject, body)
 	} else {
 		err = sendEmailToSubscribers(subject, body)
 	}
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": true,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	res["succeed"] = true
 }
