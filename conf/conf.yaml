@@ -22,3 +22,4 @@ dsn: wblog.db?_loc=Asia/Shanghai
 #dsn: root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai
 notify_emails:
 page_size: 5
+smms_fileserver: https://sm.ms/api/upload

@@ -115,6 +115,21 @@ type QrArchive struct {
 	Month       int       // month
 }
 
+type SmmsFile struct {
+	BaseModel
+	Code      string `json:"code"`
+	FileName  string `json:"filename"`
+	StoreName string `json:"storename"`
+	Size      int    `json:"size"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+	Hash      string `json:"hash"`
+	Delete    string `json:"delete"`
+	Url       string `json:"url"`
+	Path      string `json:"path"`
+	Msg       string `json:"msg"`
+}
+
 var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
@@ -124,7 +139,7 @@ func InitDB() (*gorm.DB, error) {
 	if err == nil {
 		DB = db
 		//db.LogMode(true)
-		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{})
+		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{}, &SmmsFile{})
 		db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
 		return db, err
 	}
@@ -688,3 +703,8 @@ func GetLinkById(id uint) (*Link, error) {
 	err := DB.Find(&link, "url = ?", url).Error
 	return &link, err
 }*/
+
+func (sf SmmsFile) Insert() (err error) {
+	err = DB.Create(&sf).Error
+	return
+}
