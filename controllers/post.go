@@ -140,13 +140,13 @@ func PostPublish(c *gin.Context) {
 	defer writeJSON(c, res)
 	id := c.Param("id")
 	post, err = models.GetPostById(id)
-	if err == nil {
+	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	post.IsPublished = !post.IsPublished
 	err = post.Update()
-	if err == nil {
+	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
