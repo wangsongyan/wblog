@@ -1,24 +1,25 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/wangsongyan/wblog/models"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/wangsongyan/wblog/models"
 )
 
 func PageGet(c *gin.Context) {
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
-	if err == nil && page.IsPublished {
-		page.View++
-		page.UpdateView()
-		c.HTML(http.StatusOK, "page/display.html", gin.H{
-			"page": page,
-		})
-	} else {
+	if err != nil || !page.IsPublished {
 		Handle404(c)
+		return
 	}
+	page.View++
+	page.UpdateView()
+	c.HTML(http.StatusOK, "page/display.html", gin.H{
+		"page": page,
+	})
 }
 
 func PageNew(c *gin.Context) {
@@ -36,26 +37,25 @@ func PageCreate(c *gin.Context) {
 		IsPublished: published,
 	}
 	err := page.Insert()
-	if err == nil {
-		c.Redirect(http.StatusMovedPermanently, "/admin/page")
-	} else {
+	if err != nil {
 		c.HTML(http.StatusOK, "page/new.html", gin.H{
 			"message": err.Error(),
 			"page":    page,
 		})
+		return
 	}
+	c.Redirect(http.StatusMovedPermanently, "/admin/page")
 }
 
 func PageEdit(c *gin.Context) {
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
-	if err == nil {
-		c.HTML(http.StatusOK, "page/modify.html", gin.H{
-			"page": page,
-		})
-	} else {
+	if err != nil {
 		Handle404(c)
 	}
+	c.HTML(http.StatusOK, "page/modify.html", gin.H{
+		"page": page,
+	})
 }
 
 func PageUpdate(c *gin.Context) {
@@ -65,45 +65,61 @@ func PageUpdate(c *gin.Context) {
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
 	pid, err := strconv.ParseUint(id, 10, 64)
-	if err == nil {
-		page := &models.Page{Title: title, Body: body, IsPublished: published}
-		page.ID = uint(pid)
-		err = page.Update()
-		if err == nil {
-			c.Redirect(http.StatusMovedPermanently, "/admin/page")
-			return
-		}
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-	c.AbortWithError(http.StatusInternalServerError, err)
+	page := &models.Page{Title: title, Body: body, IsPublished: published}
+	page.ID = uint(pid)
+	err = page.Update()
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.Redirect(http.StatusMovedPermanently, "/admin/page")
 }
 
 func PagePublish(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
 	if err == nil {
-		page.IsPublished = !page.IsPublished
-		err = page.Update()
+		res["message"] = err.Error()
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": err == nil,
-	})
+	page.IsPublished = !page.IsPublished
+	err = page.Update()
+	if err == nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func PageDelete(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	id := c.Param("id")
 	pid, err := strconv.ParseUint(id, 10, 64)
-	if err == nil {
-		page := &models.Page{}
-		page.ID = uint(pid)
-		err = page.Delete()
-		if err == nil {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": true,
-			})
-			return
-		}
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
-	c.AbortWithError(http.StatusInternalServerError, err)
+	page := &models.Page{}
+	page.ID = uint(pid)
+	err = page.Delete()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func PageIndex(c *gin.Context) {

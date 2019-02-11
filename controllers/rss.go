@@ -24,22 +24,25 @@ func RssGet(c *gin.Context) {
 
 	feed.Items = make([]*feeds.Item, 0)
 	posts, err := models.ListPublishedPost("", 0, 0)
-	if err == nil {
-		for _, post := range posts {
-			item := &feeds.Item{
-				Id:          fmt.Sprintf("%s/post/%d", domain, post.ID),
-				Title:       post.Title,
-				Link:        &feeds.Link{Href: fmt.Sprintf("%s/post/%d", domain, post.ID)},
-				Description: string(post.Excerpt()),
-				Created:     now,
-			}
-			feed.Items = append(feed.Items, item)
+	if err != nil {
+		seelog.Error(err)
+		return
+	}
+
+	for _, post := range posts {
+		item := &feeds.Item{
+			Id:          fmt.Sprintf("%s/post/%d", domain, post.ID),
+			Title:       post.Title,
+			Link:        &feeds.Link{Href: fmt.Sprintf("%s/post/%d", domain, post.ID)},
+			Description: string(post.Excerpt()),
+			Created:     now,
 		}
+		feed.Items = append(feed.Items, item)
 	}
 	rss, err := feed.ToRss()
-	if err == nil {
-		c.Writer.WriteString(rss)
-	} else {
+	if err != nil {
 		seelog.Error(err)
+		return
 	}
+	c.Writer.WriteString(rss)
 }

@@ -54,10 +54,6 @@ func NotifyEmail(subject, body string) error {
 	return nil
 }
 
-/*func __sendMail(to, subject, body string) error {
-	return nil
-}*/
-
 func CreateXMLSitemap() {
 	configuration := system.GetConfiguration()
 	folder := path.Join(configuration.Public, "sitemap")
@@ -103,4 +99,11 @@ func CreateXMLSitemap() {
 	if err := sitemap.SiteMapIndex(folder, "sitemap_index.xml", domain+"/static/sitemap/"); err != nil {
 		return
 	}
+}
+
+func writeJSON(ctx *gin.Context, h gin.H) {
+	if _, ok := h["succeed"]; !ok {
+		h["succeed"] = false
+	}
+	ctx.JSON(http.StatusOK, h)
 }

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -62,7 +61,6 @@ func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHead
 	if err != nil {
 		return
 	}
-	fmt.Println(string(bodyBytes))
 	err = json.Unmarshal(bodyBytes, &ret)
 	if err != nil {
 		return

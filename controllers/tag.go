@@ -14,18 +14,20 @@ import (
 )
 
 func TagCreate(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	name := c.PostForm("value")
 	tag := &models.Tag{Name: name}
-	err := tag.Insert()
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"data": tag,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": err.Error(),
-		})
+	err = tag.Insert()
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	res["succeed"] = true
+	res["data"] = tag
 }
 
 func TagGet(c *gin.Context) {

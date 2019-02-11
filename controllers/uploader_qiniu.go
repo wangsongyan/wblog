@@ -4,10 +4,9 @@ import (
 	"mime/multipart"
 	"os"
 
+	"github.com/qiniu/api.v7/auth/qbox"
+	"github.com/qiniu/api.v7/storage"
 	"github.com/wangsongyan/wblog/system"
-	"qiniupkg.com/api.v7/conf"
-	"qiniupkg.com/api.v7/kodo"
-	"qiniupkg.com/api.v7/kodocli"
 )
 
 // 获取文件大小的接口
@@ -30,25 +29,10 @@ type QiniuUploader struct {
 }
 
 func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHeader) (url string, err error) {
-
-	conf.ACCESS_KEY = system.GetConfiguration().QiniuAccessKey
-	conf.SECRET_KEY = system.GetConfiguration().QiniuSecretKey
-
-	// 创建一个Client
-	c := kodo.New(0, nil)
-	// 设置上传的策略
-	policy := &kodo.PutPolicy{
-		Scope: system.GetConfiguration().QiniuBucket,
-		//设置Token过期时间
-		Expires: 3600,
-	}
-	// 生成一个上传token
-	token := c.MakeUptoken(policy)
-	// 构建一个uploader
-	zone := 0
-	uploader := kodocli.NewUploader(zone, nil)
-
-	var size int64
+	var (
+		ret  PutRet
+		size int64
+	)
 	if statInterface, ok := file.(Stat); ok {
 		fileInfo, _ := statInterface.Stat()
 		size = fileInfo.Size()
@@ -57,7 +41,13 @@ func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHea
 		size = sizeInterface.Size()
 	}
 
-	var ret PutRet
+	putPolicy := storage.PutPolicy{
+		Scope: system.GetConfiguration().QiniuBucket,
+	}
+	mac := qbox.NewMac(system.GetConfiguration().QiniuAccessKey, system.GetConfiguration().QiniuSecretKey)
+	token := putPolicy.UploadToken(mac)
+	cfg := storage.Config{}
+	uploader := storage.NewFormUploader(&cfg)
 	err = uploader.PutWithoutKey(nil, &ret, token, file, size, nil)
 	if err != nil {
 		return

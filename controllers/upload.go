@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"net/http"
+	"mime/multipart"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,15 +9,16 @@ import (
 func Upload(c *gin.Context) {
 	var (
 		err      error
+		res      = gin.H{}
 		url      string
 		uploader Uploader
+		file     multipart.File
+		fh       *multipart.FileHeader
 	)
-	file, fh, err := c.Request.FormFile("file")
+	defer writeJSON(c, res)
+	file, fh, err = c.Request.FormFile("file")
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+		res["message"] = err.Error()
 		return
 	}
 
@@ -26,14 +27,9 @@ func Upload(c *gin.Context) {
 
 	url, err = uploader.upload(file, fh)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+		res["message"] = err.Error()
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": true,
-		"url":     url,
-	})
+	res["succeed"] = true
+	res["url"] = url
 }

@@ -89,7 +89,7 @@ func main() {
 	// subscriber
 	router.GET("/subscribe", controllers.SubscribeGet)
 	router.POST("/subscribe", controllers.Subscribe)
-	router.GET("/active", controllers.ActiveSubsciber)
+	router.GET("/active", controllers.ActiveSubscriber)
 	router.GET("/unsubscribe", controllers.UnSubscribe)
 
 	router.GET("/page/:id", controllers.PageGet)

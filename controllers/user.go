@@ -3,6 +3,10 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+
 	"github.com/alimoeeny/gooauth2"
 	"github.com/cihub/seelog"
 	"github.com/gin-contrib/sessions"
@@ -11,9 +15,6 @@ import (
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
-	"io/ioutil"
-	"net/http"
-	"strconv"
 )
 
 type GithubUserInfo struct {
@@ -65,6 +66,11 @@ func LogoutGet(c *gin.Context) {
 }
 
 func SignupPost(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	email := c.PostForm("email")
 	telephone := c.PostForm("telephone")
 	password := c.PostForm("password")
@@ -74,156 +80,177 @@ func SignupPost(c *gin.Context) {
 		Password:  password,
 		IsAdmin:   true,
 	}
-	var err error
 	if len(user.Email) == 0 || len(user.Password) == 0 {
-		err = errors.New("email or password cannot be null.")
-	} else {
-		user.Password = helpers.Md5(user.Email + user.Password)
-		err = user.Insert()
-		if err == nil {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": true,
-			})
-			return
-		} else {
-			err = errors.New("email already exists.")
-		}
+		res["message"] = "email or password cannot be null"
+		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"succeed": false,
-		"message": err.Error(),
-	})
+	user.Password = helpers.Md5(user.Email + user.Password)
+	err = user.Insert()
+	if err != nil {
+		res["message"] = "email already exists"
+		return
+	}
+	res["succeed"] = true
 }
 
 func SigninPost(c *gin.Context) {
+	var (
+		err  error
+		user *models.User
+	)
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	var err error
-	if len(username) > 0 && len(password) > 0 {
-		var user *models.User
-		user, err = models.GetUserByUsername(username)
-		fmt.Println(user, err)
-		if err == nil && user.Password == helpers.Md5(username+password) {
-			if !user.LockState {
-				s := sessions.Default(c)
-				s.Clear()
-				s.Set(SESSION_KEY, user.ID)
-				s.Save()
-				if user.IsAdmin {
-					c.Redirect(http.StatusMovedPermanently, "/admin/index")
-				} else {
-					c.Redirect(http.StatusMovedPermanently, "/")
-				}
-				return
-			} else {
-				err = errors.New("Your account have been locked.")
-			}
-		} else {
-			err = errors.New("invalid username or password.")
-		}
-	} else {
-		err = errors.New("username or password cannot be null.")
+	if username == "" || password == "" {
+		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
+			"message": "username or password cannot be null",
+		})
+		return
 	}
-	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
-		"message": err.Error(),
-	})
+	user, err = models.GetUserByUsername(username)
+	if err != nil || user.Password != helpers.Md5(username+password) {
+		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
+			"message": "invalid username or password",
+		})
+		return
+	}
+	if user.LockState {
+		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
+			"message": "Your account have been locked",
+		})
+		return
+	}
+	s := sessions.Default(c)
+	s.Clear()
+	s.Set(SESSION_KEY, user.ID)
+	s.Save()
+	if user.IsAdmin {
+		c.Redirect(http.StatusMovedPermanently, "/admin/index")
+	} else {
+		c.Redirect(http.StatusMovedPermanently, "/")
+	}
 }
 
 func Oauth2Callback(c *gin.Context) {
+	var (
+		userInfo *GithubUserInfo
+		user     *models.User
+	)
 	code := c.Query("code")
 	state := c.Query("state")
+
+	// validate state
 	session := sessions.Default(c)
 	if len(state) == 0 || state != session.Get(SESSION_GITHUB_STATE) {
 		c.Abort()
 		return
-	} else {
-		session.Delete(SESSION_GITHUB_STATE)
-		session.Save()
 	}
-	token, err := exchangeTokenByCode(code)
-	if err == nil {
-		var userInfo *GithubUserInfo
-		userInfo, err = getGithubUserInfoByAccessToken(token)
-		if err == nil {
-			var user *models.User
-			if sessionUser, exists := c.Get(CONTEXT_USER_KEY); exists {
-				user, _ = sessionUser.(*models.User)
-				_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
-				if err1 != nil { // 未绑定
-					if user.IsAdmin {
-						user.GithubLoginId = userInfo.Login
-					}
-					user.AvatarUrl = userInfo.AvatarURL
-					user.GithubUrl = userInfo.HTMLURL
-					err = user.UpdateGithubUserInfo()
-				} else {
-					err = errors.New("this github loginId has bound another account.")
-				}
-			} else {
-				user = &models.User{
-					GithubLoginId: userInfo.Login,
-					AvatarUrl:     userInfo.AvatarURL,
-					GithubUrl:     userInfo.HTMLURL,
-				}
-				user, err = user.FirstOrCreate()
-				if err == nil {
-					if user.LockState {
-						err = errors.New("Your account have been locked.")
-						HandleMessage(c, "Your account have been locked.")
-						return
-					}
-				}
-			}
+	// remove state from session
+	session.Delete(SESSION_GITHUB_STATE)
+	session.Save()
 
-			if err == nil {
-				s := sessions.Default(c)
-				s.Clear()
-				s.Set(SESSION_KEY, user.ID)
-				s.Save()
-				if user.IsAdmin {
-					c.Redirect(http.StatusMovedPermanently, "/admin/index")
-				} else {
-					c.Redirect(http.StatusMovedPermanently, "/")
-				}
+	// exchange accesstoken by code
+	token, err := exchangeTokenByCode(code)
+	if err != nil {
+		seelog.Error(err)
+		c.Redirect(http.StatusMovedPermanently, "/signin")
+		return
+	}
+
+	//get github userinfo by accesstoken
+	userInfo, err = getGithubUserInfoByAccessToken(token)
+	if err != nil {
+		seelog.Error(err)
+		c.Redirect(http.StatusMovedPermanently, "/signin")
+		return
+	}
+
+	sessionUser, exists := c.Get(CONTEXT_USER_KEY)
+	if exists { // 已登录
+		user, _ = sessionUser.(*models.User)
+		_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
+		if err1 != nil { // 未绑定
+			if user.IsAdmin {
+				user.GithubLoginId = userInfo.Login
+			}
+			user.AvatarUrl = userInfo.AvatarURL
+			user.GithubUrl = userInfo.HTMLURL
+			err = user.UpdateGithubUserInfo()
+		} else {
+			err = errors.New("this github loginId has bound another account.")
+		}
+	} else {
+		user = &models.User{
+			GithubLoginId: userInfo.Login,
+			AvatarUrl:     userInfo.AvatarURL,
+			GithubUrl:     userInfo.HTMLURL,
+		}
+		user, err = user.FirstOrCreate()
+		if err == nil {
+			if user.LockState {
+				err = errors.New("Your account have been locked.")
+				HandleMessage(c, "Your account have been locked.")
 				return
 			}
 		}
 	}
-	seelog.Error(err)
-	c.Redirect(http.StatusMovedPermanently, "/signin")
+
+	if err == nil {
+		s := sessions.Default(c)
+		s.Clear()
+		s.Set(SESSION_KEY, user.ID)
+		s.Save()
+		if user.IsAdmin {
+			c.Redirect(http.StatusMovedPermanently, "/admin/index")
+		} else {
+			c.Redirect(http.StatusMovedPermanently, "/")
+		}
+		return
+	}
 }
 
-func exchangeTokenByCode(code string) (string, error) {
-	t := &oauth.Transport{Config: &oauth.Config{
+func exchangeTokenByCode(code string) (accessToken string, err error) {
+	var (
+		transport *oauth.Transport
+		token     *oauth.Token
+	)
+	transport = &oauth.Transport{Config: &oauth.Config{
 		ClientId:     system.GetConfiguration().GithubClientId,
 		ClientSecret: system.GetConfiguration().GithubClientSecret,
 		RedirectURL:  system.GetConfiguration().GithubRedirectURL,
 		TokenURL:     system.GetConfiguration().GithubTokenUrl,
 		Scope:        system.GetConfiguration().GithubScope,
 	}}
-	tok, err := t.Exchange(code)
-	if err == nil {
-		tokenCache := oauth.CacheFile("./request.token")
-		err := tokenCache.PutToken(tok)
-		return tok.AccessToken, err
+	token, err = transport.Exchange(code)
+	if err != nil {
+		return
 	}
-	return "", err
+	accessToken = token.AccessToken
+	// cache token
+	tokenCache := oauth.CacheFile("./request.token")
+	if err := tokenCache.PutToken(token); err != nil {
+		seelog.Error(err)
+	}
+	return
 }
 
 func getGithubUserInfoByAccessToken(token string) (*GithubUserInfo, error) {
-	resp, err := http.Get(fmt.Sprintf("https://api.github.com/user?access_token=%s", token))
+	var (
+		resp *http.Response
+		body []byte
+		err  error
+	)
+	resp, err = http.Get(fmt.Sprintf("https://api.github.com/user?access_token=%s", token))
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	var body []byte
 	body, err = ioutil.ReadAll(resp.Body)
-	if err == nil {
-		var userInfo GithubUserInfo
-		err = json.Unmarshal(body, &userInfo)
-		return &userInfo, err
+	if err != nil {
+		return nil, err
 	}
-	return nil, err
+	var userInfo GithubUserInfo
+	err = json.Unmarshal(body, &userInfo)
+	return &userInfo, err
 }
 
 func ProfileGet(c *gin.Context) {
@@ -237,84 +264,105 @@ func ProfileGet(c *gin.Context) {
 }
 
 func ProfileUpdate(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	avatarUrl := c.PostForm("avatarUrl")
 	nickName := c.PostForm("nickName")
 	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
-	if user, ok := sessionUser.(*models.User); ok {
-		err := user.UpdateProfile(avatarUrl, nickName)
-		if err == nil {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": true,
-				"user":    models.User{AvatarUrl: avatarUrl, NickName: nickName},
-			})
-		} else {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": false,
-				"message": err.Error(),
-			})
-		}
+	user, ok := sessionUser.(*models.User)
+	if !ok {
+		res["message"] = "server interval error"
+		return
 	}
+	err = user.UpdateProfile(avatarUrl, nickName)
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
+	res["user"] = models.User{AvatarUrl: avatarUrl, NickName: nickName}
 }
 
 func BindEmail(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	email := c.PostForm("email")
 	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
-	if user, ok := sessionUser.(*models.User); ok {
-		if len(user.Email) > 0 {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": false,
-				"message": "email have bound.",
-			})
-		} else {
-			_, err := models.GetUserByUsername(email)
-			if err != nil {
-				err := user.UpdateEmail(email)
-				c.JSON(http.StatusOK, gin.H{
-					"succeed": err == nil,
-				})
-			} else {
-				c.JSON(http.StatusOK, gin.H{
-					"succeed": false,
-					"message": "email have be registered!",
-				})
-			}
-		}
+	user, ok := sessionUser.(*models.User)
+	if !ok {
+		res["message"] = "server interval error"
+		return
 	}
+	if len(user.Email) > 0 {
+		res["message"] = "email have bound"
+		return
+	}
+	_, err = models.GetUserByUsername(email)
+	if err == nil {
+		res["message"] = "email have be registered"
+		return
+	}
+	err = user.UpdateEmail(email)
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func UnbindEmail(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
-	if user, ok := sessionUser.(*models.User); ok {
-		if len(user.Email) == 0 {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": false,
-				"message": "email haven't bound.",
-			})
-		} else {
-			err := user.UpdateEmail("")
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": err == nil,
-			})
-		}
+	user, ok := sessionUser.(*models.User)
+	if !ok {
+		res["message"] = "server interval error"
+		return
 	}
+	if user.Email == "" {
+		res["message"] = "email haven't bound"
+		return
+	}
+	err = user.UpdateEmail("")
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func UnbindGithub(c *gin.Context) {
+	var (
+		err error
+		res = gin.H{}
+	)
+	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
-	if user, ok := sessionUser.(*models.User); ok {
-		if len(user.GithubLoginId) == 0 {
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": false,
-				"message": "github haven't bound.",
-			})
-		} else {
-			user.GithubLoginId = ""
-			err := user.UpdateGithubUserInfo()
-			c.JSON(http.StatusOK, gin.H{
-				"succeed": err == nil,
-			})
-		}
+	user, ok := sessionUser.(*models.User)
+	if !ok {
+		res["message"] = "server interval error"
+		return
 	}
+	if user.GithubLoginId == "" {
+		res["message"] = "github haven't bound"
+		return
+	}
+	user.GithubLoginId = ""
+	err = user.UpdateGithubUserInfo()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
 
 func UserIndex(c *gin.Context) {
@@ -328,21 +376,29 @@ func UserIndex(c *gin.Context) {
 }
 
 func UserLock(c *gin.Context) {
+	var (
+		err  error
+		_id  uint64
+		res  = gin.H{}
+		user *models.User
+	)
+	defer writeJSON(c, res)
 	id := c.Param("id")
-	_id, _ := strconv.ParseUint(id, 10, 64)
-	user, err := models.GetUser(uint(_id))
-	if err == nil {
-		user.LockState = !user.LockState
-		err = user.Lock()
+	_id, err = strconv.ParseUint(id, 10, 64)
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
-	if err == nil {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": true,
-		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"succeed": false,
-			"message": err.Error(),
-		})
+	user, err = models.GetUser(uint(_id))
+	if err != nil {
+		res["message"] = err.Error()
+		return
 	}
+	user.LockState = !user.LockState
+	err = user.Lock()
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
+	res["succeed"] = true
 }
