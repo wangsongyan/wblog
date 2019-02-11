@@ -29,6 +29,7 @@ type Configuration struct {
 	DSN                string `yaml:"dsn"`            //database dsn
 	NotifyEmails       string `yaml:"notify_emails"`  //notify_emails
 	PageSize           int    `yaml:"page_size"`      //page_size
+	SmmsFileServer     string `yaml:"smms_fileserver"`
 }
 
 const (
