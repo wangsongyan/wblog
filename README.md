@@ -82,3 +82,7 @@ go run main.go
 ![file](screenshots/blog.png)
 
 ![file](screenshots/admin.png)
+
+## 捐赠
+如果项目对您有帮助，打赏个鸡腿吃呗！
+![支付宝](screenshots/alipay.png)![weixin](screenshots/weixin.png)
