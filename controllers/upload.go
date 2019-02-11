@@ -12,7 +12,7 @@ func Upload(c *gin.Context) {
 		url      string
 		uploader Uploader
 	)
-	file, _, err := c.Request.FormFile("file")
+	file, fh, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"succeed": false,
@@ -24,7 +24,7 @@ func Upload(c *gin.Context) {
 	//uploader = QiniuUploader{}
 	uploader = SmmsUploader{}
 
-	url, err = uploader.upload(file)
+	url, err = uploader.upload(file, fh)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"succeed": false,

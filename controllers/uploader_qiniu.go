@@ -29,7 +29,7 @@ type PutRet struct {
 type QiniuUploader struct {
 }
 
-func (u QiniuUploader) upload(file multipart.File) (url string, err error) {
+func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHeader) (url string, err error) {
 
 	conf.ACCESS_KEY = system.GetConfiguration().QiniuAccessKey
 	conf.SECRET_KEY = system.GetConfiguration().QiniuSecretKey

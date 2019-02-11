@@ -117,7 +117,6 @@ type QrArchive struct {
 
 type SmmsFile struct {
 	BaseModel
-	Code      string `json:"code"`
 	FileName  string `json:"filename"`
 	StoreName string `json:"storename"`
 	Size      int    `json:"size"`
@@ -127,7 +126,6 @@ type SmmsFile struct {
 	Delete    string `json:"delete"`
 	Url       string `json:"url"`
 	Path      string `json:"path"`
-	Msg       string `json:"msg"`
 }
 
 var DB *gorm.DB
