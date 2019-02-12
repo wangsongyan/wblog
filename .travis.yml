@@ -8,7 +8,7 @@ go:
 
 install:
   - go get -u -v github.com/kardianos/govendor
-  - cd $GOPATH && mkdirs github.com/wangsongyan
+  - cd $GOPATH && mkdir -p github.com/wangsongyan
   - cd $GOPATH/src/github.com/wangsongyan && git clone https://github.com/wangsongyan/wblog
   - govendor sync && go install
 
