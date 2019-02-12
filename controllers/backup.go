@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -110,9 +111,10 @@ func Backup() (err error) {
 	token := putPolicy.UploadToken(mac)
 	cfg := storage.Config{}
 	uploader := storage.NewFormUploader(&cfg)
+	putExtra := storage.PutExtra{}
 
 	fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
-	err = uploader.Put(nil, &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), nil)
+	err = uploader.Put(context.Background(), &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), &putExtra)
 	if err != nil {
 		seelog.Debugf("backup error:%v", err)
 		return
