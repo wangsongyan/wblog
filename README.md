@@ -1,4 +1,4 @@
-# wblog
+# wblog [![Build Status](https://www.travis-ci.org/wangsongyan/wblog.svg?branch=master)](https://www.travis-ci.org/wangsongyan/wblog)  
 [示例地址](http://67.216.221.42/)
 
 ## 初衷
