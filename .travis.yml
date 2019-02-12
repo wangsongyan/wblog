@@ -9,6 +9,3 @@ go:
 install:
   - go get -u -v github.com/kardianos/govendor
   - cd $GOPATH/src/github.com/wangsongyan/wblog && govendor sync && go install
-
-script:
-  - cd $HOME/gopath/src/github.com/wangsongyan/wblog && wblog
