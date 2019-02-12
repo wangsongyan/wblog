@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"mime/multipart"
 	"os"
 
@@ -48,7 +49,9 @@ func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHea
 	token := putPolicy.UploadToken(mac)
 	cfg := storage.Config{}
 	uploader := storage.NewFormUploader(&cfg)
-	err = uploader.PutWithoutKey(nil, &ret, token, file, size, nil)
+	putExtra := storage.PutExtra{}
+
+	err = uploader.PutWithoutKey(context.Background(), &ret, token, file, size, &putExtra)
 	if err != nil {
 		return
 	}
