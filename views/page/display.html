@@ -46,7 +46,9 @@
     <script>
         $(document).ready(function () {
             // markdown parse
-            var md = window.markdownit();
+            var md = window.markdownit({
+                html:true
+            });
             var result = md.render($("#body").text());
             $("#body").html(result);
 
