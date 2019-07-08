@@ -1,9 +1,8 @@
 package controllers
 
 import (
-	"strconv"
-
 	"fmt"
+	"strconv"
 
 	"github.com/dchest/captcha"
 	"github.com/gin-contrib/sessions"

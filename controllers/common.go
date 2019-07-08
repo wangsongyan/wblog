@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"path"
-
 	"strings"
 
 	"github.com/denisbakhtin/sitemap"
