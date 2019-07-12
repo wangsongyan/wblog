@@ -50,7 +50,7 @@
             {{range $postkey,$postvalue:=.posts}}
                 <div class="articleInfo">
                     <span><a class="articleTitle" href="/post/{{$postvalue.ID}}">
-                        {{$length := len $postvalue.Title}}
+                        {{$length := length $postvalue.Title}}
                         {{if ge $length 40}}
                             {{truncate $postvalue.Title 40}}...
                         {{else}}
@@ -58,11 +58,13 @@
                         {{end}}
                     </a></span>
                     <span class="createdTime" style="margin-right: 10px;">
+                        <!--<span class="glyphicon glyphicon-eye-open">({{$postvalue.View}})</span>
+                        <span class="glyphicon glyphicon-comment">({{$postvalue.CommentTotal}})</span>-->
                         {{dateFormat $postvalue.CreatedAt "06-01-02 15:04"}}
                     </span>
                 </div>
             <div class="articleBody">
-                {{$length := len $postvalue.Body}}
+                {{$length := length $postvalue.Body}}
                 {{if ge $length 100}}
                     {{truncate $postvalue.Body 100}}...
                 {{else}}
