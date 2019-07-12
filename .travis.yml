@@ -1,11 +1,9 @@
 language: go
-
 go:
-  - 1.x
-  - "1.10"
-  - 1.11.x
-  - master
+  - "1.10.x"
+  - "1.11.x"
 
-install:
-  - go get -u -v github.com/kardianos/govendor
-  - cd $GOPATH/src/github.com/wangsongyan/wblog && govendor sync && go install
+env:
+  - GO111MODULE=on
+
+install: true
