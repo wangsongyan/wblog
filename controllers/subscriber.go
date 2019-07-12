@@ -15,8 +15,10 @@ import (
 
 func SubscribeGet(c *gin.Context) {
 	count, _ := models.CountSubscriber()
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 		"total": count,
+		"user":  user,
 	})
 }
 

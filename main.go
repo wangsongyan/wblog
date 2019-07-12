@@ -173,6 +173,7 @@ func setTemplate(engine *gin.Engine) {
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
 		"truncate":   helpers.Truncate,
+		"length":     helpers.Len,
 		"add":        helpers.Add,
 		"minus":      helpers.Minus,
 		"listtag":    helpers.ListTag,

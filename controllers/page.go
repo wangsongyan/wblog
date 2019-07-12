@@ -17,13 +17,18 @@ func PageGet(c *gin.Context) {
 	}
 	page.View++
 	page.UpdateView()
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "page/display.html", gin.H{
 		"page": page,
+		"user": user,
 	})
 }
 
 func PageNew(c *gin.Context) {
-	c.HTML(http.StatusOK, "page/new.html", nil)
+	user, _ := c.Get(CONTEXT_USER_KEY)
+	c.HTML(http.StatusOK, "page/new.html", gin.H{
+		"user": user,
+	})
 }
 
 func PageCreate(c *gin.Context) {
@@ -31,6 +36,8 @@ func PageCreate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
+	user, _ := c.Get(CONTEXT_USER_KEY)
+
 	page := &models.Page{
 		Title:       title,
 		Body:        body,
@@ -41,6 +48,7 @@ func PageCreate(c *gin.Context) {
 		c.HTML(http.StatusOK, "page/new.html", gin.H{
 			"message": err.Error(),
 			"page":    page,
+			"user":    user,
 		})
 		return
 	}
@@ -53,8 +61,10 @@ func PageEdit(c *gin.Context) {
 	if err != nil {
 		Handle404(c)
 	}
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "page/modify.html", gin.H{
 		"page": page,
+		"user": user,
 	})
 }
 

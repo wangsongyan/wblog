@@ -32,6 +32,9 @@
                 <ul class="nav navbar-nav">
                     {{if .user}}
                     <li><a href="/logout">退出登录</a></li>
+                        {{if .user.IsAdmin}}}
+                    <li><a href="/admin/index">后台管理</a></li>
+                        {{end}}}
                     {{else}}
                     <li><a href="/auth/github">Github登录</a></li>
                     {{end}}
