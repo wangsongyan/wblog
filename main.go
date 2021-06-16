@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gin-contrib/sessions/cookie"
 	"html/template"
 	"net/http"
@@ -33,6 +34,8 @@ func main() {
 	seelog.ReplaceLogger(logger)
 	defer seelog.Flush()
 
+	logger.Infof("Loading configuration...")
+	fmt.Println("Loading configuration....")
 	if err := system.LoadConfiguration(*configFilePath); err != nil {
 		seelog.Critical("err parsing config log file", err)
 		return
