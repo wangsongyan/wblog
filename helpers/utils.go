@@ -31,6 +31,10 @@ func Truncate(s string, n int) string {
 	return s
 }
 
+func Len(s string) int {
+	return len([]rune(s))
+}
+
 func UUID() string {
 	return uuid.Rand().Hex()
 }

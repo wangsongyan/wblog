@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"os"
 	"path"
-
 	"strings"
+
+	"github.com/cihub/seelog"
 
 	"github.com/denisbakhtin/sitemap"
 	"github.com/gin-gonic/gin"
@@ -54,10 +55,14 @@ func NotifyEmail(subject, body string) error {
 	return nil
 }
 
-func CreateXMLSitemap() {
+func CreateXMLSitemap() (err error) {
 	configuration := system.GetConfiguration()
 	folder := path.Join(configuration.Public, "sitemap")
-	os.MkdirAll(folder, os.ModePerm)
+	err = os.MkdirAll(folder, os.ModePerm)
+	if err != nil {
+		seelog.Error("create folder:%v", err)
+		return
+	}
 	domain := configuration.Domain
 	now := helpers.GetCurrentTime()
 	items := make([]sitemap.Item, 0)
@@ -70,35 +75,44 @@ func CreateXMLSitemap() {
 	})
 
 	posts, err := models.ListPublishedPost("", 0, 0)
-	if err == nil {
-		for _, post := range posts {
-			items = append(items, sitemap.Item{
-				Loc:        fmt.Sprintf("%s/post/%d", domain, post.ID),
-				LastMod:    post.UpdatedAt,
-				Changefreq: "weekly",
-				Priority:   0.9,
-			})
-		}
+	if err != nil {
+		seelog.Error("models.ListPublishedPost:%v", err)
+		return
+	}
+	for _, post := range posts {
+		items = append(items, sitemap.Item{
+			Loc:        fmt.Sprintf("%s/post/%d", domain, post.ID),
+			LastMod:    post.UpdatedAt,
+			Changefreq: "weekly",
+			Priority:   0.9,
+		})
 	}
 
 	pages, err := models.ListPublishedPage()
-	if err == nil {
-		for _, page := range pages {
-			items = append(items, sitemap.Item{
-				Loc:        fmt.Sprintf("%s/page/%d", domain, page.ID),
-				LastMod:    page.UpdatedAt,
-				Changefreq: "monthly",
-				Priority:   0.8,
-			})
-		}
+	if err != nil {
+		seelog.Error("models.ListPublishedPage:%v", err)
+		return
+	}
+	for _, page := range pages {
+		items = append(items, sitemap.Item{
+			Loc:        fmt.Sprintf("%s/page/%d", domain, page.ID),
+			LastMod:    page.UpdatedAt,
+			Changefreq: "monthly",
+			Priority:   0.8,
+		})
 	}
 
-	if err := sitemap.SiteMap(path.Join(folder, "sitemap1.xml.gz"), items); err != nil {
+	err = sitemap.SiteMap(path.Join(folder, "sitemap1.xml.gz"), items)
+	if err != nil {
+		seelog.Error("sitemap.SiteMap:%v", err)
 		return
 	}
-	if err := sitemap.SiteMapIndex(folder, "sitemap_index.xml", domain+"/static/sitemap/"); err != nil {
+	err = sitemap.SiteMapIndex(folder, "sitemap_index.xml", domain+"/static/sitemap/")
+	if err != nil {
+		seelog.Error("sitemap.SiteMapIndex:%v", err)
 		return
 	}
+	return
 }
 
 func writeJSON(ctx *gin.Context, h gin.H) {

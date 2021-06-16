@@ -28,7 +28,10 @@ func PostGet(c *gin.Context) {
 }
 
 func PostNew(c *gin.Context) {
-	c.HTML(http.StatusOK, "post/new.html", nil)
+	user, _ := c.Get(CONTEXT_USER_KEY)
+	c.HTML(http.StatusOK, "post/new.html", gin.H{
+		"user": user,
+	})
 }
 
 func PostCreate(c *gin.Context) {
@@ -37,6 +40,7 @@ func PostCreate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
+	user, _ := c.Get(CONTEXT_USER_KEY)
 
 	post := &models.Post{
 		Title:       title,
@@ -48,6 +52,7 @@ func PostCreate(c *gin.Context) {
 		c.HTML(http.StatusOK, "post/new.html", gin.H{
 			"post":    post,
 			"message": err.Error(),
+			"user":    user,
 		})
 		return
 	}
@@ -78,8 +83,10 @@ func PostEdit(c *gin.Context) {
 		return
 	}
 	post.Tags, _ = models.ListTagByPostId(id)
+	user, _ := c.Get(CONTEXT_USER_KEY)
 	c.HTML(http.StatusOK, "post/modify.html", gin.H{
 		"post": post,
+		"user": user,
 	})
 }
 
@@ -90,6 +97,7 @@ func PostUpdate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
+	user, _ := c.Get(CONTEXT_USER_KEY)
 
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
@@ -108,6 +116,7 @@ func PostUpdate(c *gin.Context) {
 		c.HTML(http.StatusOK, "post/modify.html", gin.H{
 			"post":    post,
 			"message": err.Error(),
+			"user":    user,
 		})
 		return
 	}
