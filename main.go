@@ -259,7 +259,3 @@ func getCurrentDirectory() string {
 	}
 	return system.GetConfiguration().ClassPath
 }
-
-//func getCurrentDirectory() string {
-//	return ""
-//}
