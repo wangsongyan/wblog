@@ -8,4 +8,4 @@ go:
 
 install:
   - go get -u -v github.com/kardianos/govendor
-  - cd $GOPATH/src/github.com/wangsongyan/wblog && govendor sync && go install
+  - cd $GOPATH/src/wblog && govendor sync && go install

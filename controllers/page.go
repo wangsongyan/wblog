@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/wangsongyan/wblog/models"
+	"wblog/models"
 )
 
 func PageGet(c *gin.Context) {
