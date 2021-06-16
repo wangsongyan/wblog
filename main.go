@@ -34,13 +34,13 @@ func main() {
 	seelog.ReplaceLogger(logger)
 	defer seelog.Flush()
 
-	logger.Infof("Loading configuration...")
+	logger.Info("Loading configuration...")
 	fmt.Println("Loading configuration....")
 	if err := system.LoadConfiguration(*configFilePath); err != nil {
 		seelog.Critical("err parsing config log file", err)
 		return
 	}
-
+	logger.Info("Init DB...")
 	db, err := models.InitDB()
 	if err != nil {
 		seelog.Critical("err open databases", err)
@@ -55,6 +55,7 @@ func main() {
 	setSessions(router)
 	router.Use(SharedData())
 
+	logger.Info("Gocron tasks...")
 	//Periodic tasks
 	gocron.Every(1).Day().Do(controllers.CreateXMLSitemap)
 	gocron.Every(7).Days().Do(controllers.Backup)
@@ -166,6 +167,7 @@ func main() {
 	}
 
 	router.Run(system.GetConfiguration().Addr)
+	logger.Info("Application initialized!!!")
 }
 
 func setTemplate(engine *gin.Engine) {
