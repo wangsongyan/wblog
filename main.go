@@ -2,21 +2,21 @@ package main
 
 import (
 	"flag"
+	"github.com/gin-contrib/sessions/cookie"
 	"html/template"
 	"net/http"
-	"os"
+
 	"path/filepath"
-	"strings"
 
 	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/wangsongyan/wblog/controllers"
-	"github.com/wangsongyan/wblog/helpers"
-	"github.com/wangsongyan/wblog/models"
-	"github.com/wangsongyan/wblog/system"
+	"os"
+	"wblog/controllers"
+	"wblog/helpers"
+	"wblog/models"
+	"wblog/system"
 )
 
 func main() {
@@ -173,7 +173,6 @@ func setTemplate(engine *gin.Engine) {
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
 		"truncate":   helpers.Truncate,
-		"length":     helpers.Len,
 		"add":        helpers.Add,
 		"minus":      helpers.Minus,
 		"listtag":    helpers.ListTag,
@@ -188,6 +187,7 @@ func setSessions(router *gin.Engine) {
 	config := system.GetConfiguration()
 	//https://github.com/gin-gonic/contrib/tree/master/sessions
 	store := cookie.NewStore([]byte(config.SessionSecret))
+
 	store.Options(sessions.Options{HttpOnly: true, MaxAge: 7 * 86400, Path: "/"}) //Also set Secure: true if using SSL, you should though
 	router.Use(sessions.Sessions("gin-session", store))
 	//https://github.com/utrack/gin-csrf
@@ -253,11 +253,11 @@ func AuthRequired() gin.HandlerFunc {
 }
 
 func getCurrentDirectory() string {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	_, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		seelog.Critical(err)
 	}
-	return strings.Replace(dir, "\\", "/", -1)
+	return system.GetConfiguration().ClassPath
 }
 
 //func getCurrentDirectory() string {
