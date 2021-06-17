@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {{template "meta.html"}}
 
-    <title>Blog Home - zihuiliu</title>
+    <title>Blog Home - 王松雁</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="/static/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -50,7 +50,7 @@
             {{range $postkey,$postvalue:=.posts}}
                 <div class="articleInfo">
                     <span><a class="articleTitle" href="/post/{{$postvalue.ID}}">
-                        {{$length := len $postvalue.Title}}
+                        {{$length := length $postvalue.Title}}
                         {{if ge $length 40}}
                             {{truncate $postvalue.Title 40}}...
                         {{else}}
@@ -64,7 +64,7 @@
                     </span>
                 </div>
             <div class="articleBody">
-                {{$length := len $postvalue.Body}}
+                {{$length := length $postvalue.Body}}
                 {{if ge $length 100}}
                     {{truncate $postvalue.Body 100}}...
                 {{else}}

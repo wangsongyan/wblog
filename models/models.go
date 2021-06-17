@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	//_ "github.com/mattn/go-sqlite3"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
+	//_ "github.com/go-sql-driver/mysql"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
-	"wblog/system"
+	"github.com/wangsongyan/wblog/system"
 )
 
 // I don't need soft delete,so I use customized BaseModel instead gorm.Model
@@ -35,7 +35,7 @@ type Page struct {
 type Post struct {
 	BaseModel
 	Title        string     // title
-	Body         string     `sql:"type:text;"` // body
+	Body         string     // body
 	View         int        // view count
 	IsPublished  bool       // published or not
 	Tags         []*Tag     `gorm:"-"` // tags of post
@@ -132,11 +132,10 @@ var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
 
-	db, err := gorm.Open("mysql", system.GetConfiguration().DSN)
+	db, err := gorm.Open("sqlite3", system.GetConfiguration().DSN)
 	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	if err == nil {
 		DB = db
-		db.Set("gorm:table_options", "CHARSET=utf8mb4")
 		//db.LogMode(true)
 		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{}, &SmmsFile{})
 		db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")

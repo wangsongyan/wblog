@@ -2,22 +2,21 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	"github.com/gin-contrib/sessions/cookie"
 	"html/template"
 	"net/http"
-
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"os"
-	"wblog/controllers"
-	"wblog/helpers"
-	"wblog/models"
-	"wblog/system"
+	"github.com/wangsongyan/wblog/controllers"
+	"github.com/wangsongyan/wblog/helpers"
+	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 )
 
 func main() {
@@ -34,13 +33,11 @@ func main() {
 	seelog.ReplaceLogger(logger)
 	defer seelog.Flush()
 
-	logger.Info("Loading configuration...")
-	fmt.Println("Loading configuration....")
 	if err := system.LoadConfiguration(*configFilePath); err != nil {
 		seelog.Critical("err parsing config log file", err)
 		return
 	}
-	logger.Info("Init DB...")
+
 	db, err := models.InitDB()
 	if err != nil {
 		seelog.Critical("err open databases", err)
@@ -55,7 +52,6 @@ func main() {
 	setSessions(router)
 	router.Use(SharedData())
 
-	logger.Info("Gocron tasks...")
 	//Periodic tasks
 	gocron.Every(1).Day().Do(controllers.CreateXMLSitemap)
 	gocron.Every(7).Days().Do(controllers.Backup)
@@ -167,7 +163,6 @@ func main() {
 	}
 
 	router.Run(system.GetConfiguration().Addr)
-	logger.Info("Application initialized!!!")
 }
 
 func setTemplate(engine *gin.Engine) {
@@ -178,6 +173,7 @@ func setTemplate(engine *gin.Engine) {
 		"isOdd":      helpers.IsOdd,
 		"isEven":     helpers.IsEven,
 		"truncate":   helpers.Truncate,
+		"length":     helpers.Len,
 		"add":        helpers.Add,
 		"minus":      helpers.Minus,
 		"listtag":    helpers.ListTag,
@@ -192,7 +188,6 @@ func setSessions(router *gin.Engine) {
 	config := system.GetConfiguration()
 	//https://github.com/gin-gonic/contrib/tree/master/sessions
 	store := cookie.NewStore([]byte(config.SessionSecret))
-
 	store.Options(sessions.Options{HttpOnly: true, MaxAge: 7 * 86400, Path: "/"}) //Also set Secure: true if using SSL, you should though
 	router.Use(sessions.Sessions("gin-session", store))
 	//https://github.com/utrack/gin-csrf
@@ -258,9 +253,13 @@ func AuthRequired() gin.HandlerFunc {
 }
 
 func getCurrentDirectory() string {
-	_, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
 		seelog.Critical(err)
 	}
-	return system.GetConfiguration().ClassPath
+	return strings.Replace(dir, "\\", "/", -1)
 }
+
+//func getCurrentDirectory() string {
+//	return ""
+//}

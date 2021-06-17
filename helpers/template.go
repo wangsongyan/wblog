@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"wblog/models"
+	"github.com/wangsongyan/wblog/models"
 )
 
 // 格式化时间

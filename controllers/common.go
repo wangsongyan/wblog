@@ -11,9 +11,9 @@ import (
 
 	"github.com/denisbakhtin/sitemap"
 	"github.com/gin-gonic/gin"
-	"wblog/helpers"
-	"wblog/models"
-	"wblog/system"
+	"github.com/wangsongyan/wblog/helpers"
+	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
 )
 
 const (
