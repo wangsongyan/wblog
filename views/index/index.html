@@ -50,7 +50,7 @@
             {{range $postkey,$postvalue:=.posts}}
                 <div class="articleInfo">
                     <span><a class="articleTitle" href="/post/{{$postvalue.ID}}">
-                        {{$length := length $postvalue.Title}}
+                        {{$length := len $postvalue.Title}}
                         {{if ge $length 40}}
                             {{truncate $postvalue.Title 40}}...
                         {{else}}
@@ -64,7 +64,7 @@
                     </span>
                 </div>
             <div class="articleBody">
-                {{$length := length $postvalue.Body}}
+                {{$length := len $postvalue.Body}}
                 {{if ge $length 100}}
                     {{truncate $postvalue.Body 100}}...
                 {{else}}
