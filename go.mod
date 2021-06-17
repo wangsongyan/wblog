@@ -13,16 +13,12 @@ require (
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gorilla/feeds v1.1.1
-	github.com/jinzhu/gorm v1.9.8
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/mattn/go-isatty v0.0.8 // indirect
-	github.com/mattn/go-sqlite3 v1.10.0
-	github.com/microcosm-cc/bluemonday v1.0.2
-	github.com/pkg/errors v0.8.0
-	github.com/qiniu/api.v7 v7.2.5+incompatible
-	github.com/qiniu/x v7.0.8+incompatible // indirect
-	github.com/russross/blackfriday v1.5.2
+	github.com/jinzhu/gorm v1.9.16
+	github.com/kr/pretty v0.2.1 // indirect
+	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/microcosm-cc/bluemonday v1.0.12
+	github.com/pkg/errors v0.9.1
+	github.com/qiniu/go-sdk/v7 v7.9.6
+	github.com/russross/blackfriday v1.6.0
 	github.com/snluu/uuid v0.0.0-20130306162636-1dd34a9ad6c0
-	github.com/ugorji/go v1.1.5-pre // indirect
-	qiniupkg.com/x v7.0.8+incompatible // indirect
 )

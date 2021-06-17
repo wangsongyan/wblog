@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+
+	"github.com/qiniu/go-sdk/v7/auth/qbox"
+	"github.com/qiniu/go-sdk/v7/storage"
+
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -12,8 +16,7 @@ import (
 	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/qiniu/api.v7/auth/qbox"
-	"github.com/qiniu/api.v7/storage"
+
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/system"
 )
