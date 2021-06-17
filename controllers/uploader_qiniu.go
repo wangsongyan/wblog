@@ -7,7 +7,7 @@ import (
 
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
-	"wblog/system"
+	"github.com/wangsongyan/wblog/system"
 )
 
 // 获取文件大小的接口
