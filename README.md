@@ -1,5 +1,5 @@
 # wblog [![Build Status](https://www.travis-ci.org/wangsongyan/wblog.svg?branch=master)](https://www.travis-ci.org/wangsongyan/wblog)  
-[示例地址](http://67.216.221.42/)
+[示例地址](http://blog.wangsy.me/)
 
 ## 初衷
 作为一名web开发程序员居然没有自己的博客，都不好意思对外宣称自己的开发web的。
