@@ -1,19 +1,18 @@
 # wblog [![Build Status](https://www.travis-ci.org/wangsongyan/wblog.svg?branch=master)](https://www.travis-ci.org/wangsongyan/wblog)  
 [示例地址](http://blog.wangsy.me/)
 
-## 初衷
+## 一、初衷
 作为一名web开发程序员居然没有自己的博客，都不好意思对外宣称自己的开发web的。
 以前也有写博客的习惯，但是都是用的现有的博客网站。
 
-## 技术选型
+## 二、技术选型
 1. web:[gin](https://github.com/gin-gonic/gin)
 2. orm:[gorm](https://github.com/jinzhu/gorm)
 3. database:[sqlite3](https://github.com/mattn/go-sqlite3)
-4. ~~全文检索:[wukong](https://github.com/huichen/wukong)~~
-5. 文件存储:~~[七牛云存储](https://www.qiniu.com/)~~[smms图床](https://sm.ms)
-6. 配置文件 [go-yaml](https://github.com/go-yaml/yaml)
+4. 文件存储:[smms图床](https://sm.ms)/~~[七牛云存储](https://www.qiniu.com/)~~
+5. 配置文件 [go-yaml](https://github.com/go-yaml/yaml)
 
-## 项目结构
+## 三、项目结构
 ```
 -wblog
     |-conf 配置文件目录
@@ -27,33 +26,30 @@
         |-libs js类库
     |-system 系统配置文件加载目录
     |-tests 测试目录
-    |-vendor 项目依赖其他开源项目目录
     |-views 模板文件目录
     |-main.go 程序执行入口
 ```
-## TODO
-- [ ] 系统日志
-- [ ] 网站统计
+## 四、TODO
 - [x] 文章、页面访问统计
-- [x] github登录发表评论
-- [x] rss
+- [x] Github登录发表评论
+- [x] RSS
 - [x] 定时备份系统数据
 - [x] 邮箱订阅功能
+- [ ] 系统日志
+- [ ] 网站统计
+- [ ] 云存储切换
+- [ ] 支持MySQL数据库
+- [ ] 导航栏配置
 
-## 安装部署
-本项目使用govendor管理依赖包，[govendor](https://github.com/kardianos/govendor)安装方法
-```
-go get -u github.com/kardianos/govendor
-```
-
+## 五、安装运行
 ```
 git clone https://github.com/wangsongyan/wblog
 cd wblog
-govendor sync
+go mod tidy
 go run main.go
 ```
 
-## 使用方法
+## 六、使用方法
 ### 使用说明
 1. 修改conf.yaml，设置signup_enabled: true
 2. 访问http://xxx.xxx/signup 注册管理员账号
@@ -73,9 +69,9 @@ go run main.go
     - smtp_username
     - smtp_password
     - smtp_host,例如：smtp.163.com:25
-4. Goland运行时，修改main.go getCurrentDirectory方法返回""
+4. GoLand运行时，修改`Run/Debug Configurations` > `Output Directory`选择到项目根目录，否则报模版目录找不到
 
-## 效果图
+## 七、效果图
 
 ![file](screenshots/index.png)
 
@@ -83,7 +79,7 @@ go run main.go
 
 ![file](screenshots/admin.png)
 
-## 捐赠
+## 八、捐赠
 如果项目对您有帮助，打赏个鸡腿吃呗！  
 <img src="https://raw.githubusercontent.com/wangsongyan/wblog/master/screenshots/alipay.png" width = 40% height = 40% />
 <img src="https://raw.githubusercontent.com/wangsongyan/wblog/master/screenshots/weixin.png" width = 40% height = 40% />
