@@ -9,12 +9,10 @@ require (
 	github.com/dchest/captcha v0.0.0-20170622155422-6a29415a8364
 	github.com/denisbakhtin/sitemap v0.0.0-20151103020935-3b73dfe0369c
 	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
-	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.4.0
+	github.com/gin-gonic/gin v1.9.1
 	github.com/go-yaml/yaml v2.1.0+incompatible
 	github.com/gorilla/feeds v1.1.1
 	github.com/jinzhu/gorm v1.9.8
-	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/pkg/errors v0.8.1
