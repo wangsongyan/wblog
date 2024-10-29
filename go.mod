@@ -16,7 +16,7 @@ require (
 	github.com/jinzhu/gorm v1.9.8
 	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0
-	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/microcosm-cc/bluemonday v1.0.26
 	github.com/pkg/errors v0.8.1
 	github.com/qiniu/go-sdk/v7 v7.25.0
 	github.com/russross/blackfriday v1.5.2
