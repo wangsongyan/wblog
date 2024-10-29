@@ -16,7 +16,7 @@ import (
 	"github.com/snluu/uuid"
 )
 
-// 计算字符串的md5值
+// Md5 计算字符串的md5值
 func Md5(source string) string {
 	md5h := md5.New()
 	md5h.Write([]byte(source))
@@ -44,18 +44,18 @@ func GetCurrentTime() time.Time {
 	return time.Now().In(loc)
 }
 
-func SendToMail(user, password, host, to, subject, body, mailtype string) error {
+func SendToMail(user, password, host, to, subject, body, mailType string) error {
 	hp := strings.Split(host, ":")
 	auth := smtp.PlainAuth("", user, password, hp[0])
-	var content_type string
-	if mailtype == "html" {
-		content_type = "Content-Type: text/" + mailtype + "; charset=UTF-8"
+	var contentType string
+	if mailType == "html" {
+		contentType = "Content-Type: text/" + mailType + "; charset=UTF-8"
 	} else {
-		content_type = "Content-Type: text/plain" + "; charset=UTF-8"
+		contentType = "Content-Type: text/plain" + "; charset=UTF-8"
 	}
-	msg := []byte("To: " + to + "\r\nFrom: " + user + "\r\nSubject: " + subject + "\r\n" + content_type + "\r\n\r\n" + body)
-	send_to := strings.Split(to, ";")
-	return smtp.SendMail(host, auth, user, send_to, msg)
+	msg := []byte("To: " + to + "\r\nFrom: " + user + "\r\nSubject: " + subject + "\r\n" + contentType + "\r\n\r\n" + body)
+	sendTo := strings.Split(to, ";")
+	return smtp.SendMail(host, auth, user, sendTo, msg)
 }
 
 func PathExists(path string) (bool, error) {
