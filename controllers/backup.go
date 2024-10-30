@@ -60,10 +60,12 @@ func RestorePost(c *gin.Context) {
 		res["message"] = err.Error()
 		return
 	}
-	bodyBytes, err = helpers.Decrypt(bodyBytes, system.GetConfiguration().BackupKey)
-	if err != nil {
-		res["message"] = err.Error()
-		return
+	if len(system.GetConfiguration().BackupKey) > 0 {
+		bodyBytes, err = helpers.Decrypt(bodyBytes, []byte(system.GetConfiguration().BackupKey))
+		if err != nil {
+			res["message"] = err.Error()
+			return
+		}
 	}
 	err = ioutil.WriteFile(fileName, bodyBytes, os.ModePerm)
 	if err == nil {
@@ -75,21 +77,20 @@ func RestorePost(c *gin.Context) {
 
 func Backup() (err error) {
 	var (
-		u           *url.URL
-		exist       bool
-		ret         PutRet
-		bodyBytes   []byte
-		encryptData []byte
+		u         *url.URL
+		exist     bool
+		ret       PutRet
+		bodyBytes []byte
 	)
 	u, err = url.Parse(system.GetConfiguration().DSN)
 	if err != nil {
-		seelog.Debug("parse dsn error:%v", err)
+		seelog.Debugf("parse dsn error:%v", err)
 		return
 	}
 	exist, _ = helpers.PathExists(u.Path)
 	if !exist {
 		err = errors.New("database file doesn't exists.")
-		seelog.Debug("database file doesn't exists.")
+		seelog.Debug(err.Error())
 		return
 	}
 	seelog.Debug("start backup...")
@@ -98,10 +99,12 @@ func Backup() (err error) {
 		seelog.Error(err)
 		return
 	}
-	encryptData, err = helpers.Encrypt(bodyBytes, system.GetConfiguration().BackupKey)
-	if err != nil {
-		seelog.Error(err)
-		return
+	if len(system.GetConfiguration().BackupKey) > 0 {
+		bodyBytes, err = helpers.Encrypt(bodyBytes, []byte(system.GetConfiguration().BackupKey))
+		if err != nil {
+			seelog.Error(err)
+			return
+		}
 	}
 
 	putPolicy := storage.PutPolicy{
@@ -114,11 +117,11 @@ func Backup() (err error) {
 	putExtra := storage.PutExtra{}
 
 	fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
-	err = uploader.Put(context.Background(), &ret, token, fileName, bytes.NewReader(encryptData), int64(len(encryptData)), &putExtra)
+	err = uploader.Put(context.Background(), &ret, token, fileName, bytes.NewReader(bodyBytes), int64(len(bodyBytes)), &putExtra)
 	if err != nil {
 		seelog.Debugf("backup error:%v", err)
 		return
 	}
-	seelog.Debug("backup succeefully.")
+	seelog.Debug("backup successfully.")
 	return err
 }

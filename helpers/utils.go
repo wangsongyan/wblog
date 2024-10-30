@@ -69,10 +69,7 @@ func PathExists(path string) (bool, error) {
 	return false, err
 }
 
-func Decrypt(ciphertext []byte, keystring string) ([]byte, error) {
-	// Key
-	key := []byte(keystring)
-
+func Decrypt(ciphertext, key []byte) ([]byte, error) {
 	// Create the AES cipher
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -83,7 +80,7 @@ func Decrypt(ciphertext []byte, keystring string) ([]byte, error) {
 	// if the text is too small, then it is incorrect
 	if len(ciphertext) < aes.BlockSize {
 		err = errors.New("Text is too short")
-		return nil, nil
+		return nil, err
 	}
 
 	// Get the 16 byte IV
@@ -101,10 +98,7 @@ func Decrypt(ciphertext []byte, keystring string) ([]byte, error) {
 	return ciphertext, nil
 }
 
-func Encrypt(plaintext []byte, keystring string) ([]byte, error) {
-
-	// Key
-	key := []byte(keystring)
+func Encrypt(plaintext, key []byte) ([]byte, error) {
 
 	// Create the AES cipher
 	block, err := aes.NewCipher(key)
