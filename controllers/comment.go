@@ -19,12 +19,12 @@ func CommentPost(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	s := sessions.Default(c)
-	sessionUserID := s.Get(SESSION_KEY)
+	sessionUserID := s.Get(SessionKey)
 	userId, _ := sessionUserID.(uint)
 
 	verifyCode := c.PostForm("verifyCode")
-	captchaId := s.Get(SESSION_CAPTCHA)
-	s.Delete(SESSION_CAPTCHA)
+	captchaId := s.Get(SessionCaptcha)
+	s.Delete(SessionCaptcha)
 	_captchaId, _ := captchaId.(string)
 	if !captcha.VerifyString(_captchaId, verifyCode) {
 		res["message"] = "error verifycode"
@@ -71,7 +71,7 @@ func CommentDelete(c *gin.Context) {
 	defer writeJSON(c, res)
 
 	s := sessions.Default(c)
-	sessionUserID := s.Get(SESSION_KEY)
+	sessionUserID := s.Get(SessionKey)
 	userId, _ := sessionUserID.(uint)
 
 	commentId := c.Param("id")

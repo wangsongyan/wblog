@@ -183,7 +183,7 @@ func setTemplate(engine *gin.Engine) {
 	engine.LoadHTMLGlob(filepath.Join(getCurrentDirectory(), "./views/**/*"))
 }
 
-//setSessions initializes sessions & csrf middlewares
+// setSessions initializes sessions & csrf middlewares
 func setSessions(router *gin.Engine) {
 	config := system.GetConfiguration()
 	//https://github.com/gin-gonic/contrib/tree/master/sessions
@@ -202,14 +202,14 @@ func setSessions(router *gin.Engine) {
 
 //+++++++++++++ middlewares +++++++++++++++++++++++
 
-//SharedData fills in common data, such as user info, etc...
+// SharedData fills in common data, such as user info, etc...
 func SharedData() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
-		if uID := session.Get(controllers.SESSION_KEY); uID != nil {
+		if uID := session.Get(controllers.SessionKey); uID != nil {
 			user, err := models.GetUser(uID)
 			if err == nil {
-				c.Set(controllers.CONTEXT_USER_KEY, user)
+				c.Set(controllers.ContextUserKey, user)
 			}
 		}
 		if system.GetConfiguration().SignupEnabled {
@@ -219,10 +219,10 @@ func SharedData() gin.HandlerFunc {
 	}
 }
 
-//AuthRequired grants access to authenticated users, requires SharedData middleware
+// AuthRequired grants access to authenticated users, requires SharedData middleware
 func AdminScopeRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if user, _ := c.Get(controllers.CONTEXT_USER_KEY); user != nil {
+		if user, _ := c.Get(controllers.ContextUserKey); user != nil {
 			if u, ok := user.(*models.User); ok && u.IsAdmin {
 				c.Next()
 				return
@@ -238,7 +238,7 @@ func AdminScopeRequired() gin.HandlerFunc {
 
 func AuthRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if user, _ := c.Get(controllers.CONTEXT_USER_KEY); user != nil {
+		if user, _ := c.Get(controllers.ContextUserKey); user != nil {
 			if _, ok := user.(*models.User); ok {
 				c.Next()
 				return

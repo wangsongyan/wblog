@@ -9,8 +9,8 @@ import (
 func CaptchaGet(context *gin.Context) {
 	session := sessions.Default(context)
 	captchaId := captcha.NewLen(4)
-	session.Delete(SESSION_CAPTCHA)
-	session.Set(SESSION_CAPTCHA, captchaId)
+	session.Delete(SessionCaptcha)
+	session.Set(SessionCaptcha, captchaId)
 	session.Save()
 	captcha.WriteImage(context.Writer, captchaId, 100, 40)
 }

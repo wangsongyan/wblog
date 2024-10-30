@@ -15,8 +15,8 @@ func AuthGet(c *gin.Context) {
 
 	session := sessions.Default(c)
 	uuid := helpers.UUID()
-	session.Delete(SESSION_GITHUB_STATE)
-	session.Set(SESSION_GITHUB_STATE, uuid)
+	session.Delete(SessionGithubState)
+	session.Set(SessionGithubState, uuid)
 	session.Save()
 
 	authurl := "/signin"

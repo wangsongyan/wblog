@@ -20,7 +20,7 @@ func PostGet(c *gin.Context) {
 	post.UpdateView()
 	post.Tags, _ = models.ListTagByPostId(id)
 	post.Comments, _ = models.ListCommentByPostID(id)
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/display.html", gin.H{
 		"post": post,
 		"user": user,
@@ -28,7 +28,7 @@ func PostGet(c *gin.Context) {
 }
 
 func PostNew(c *gin.Context) {
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/new.html", gin.H{
 		"user": user,
 	})
@@ -40,7 +40,7 @@ func PostCreate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 
 	post := &models.Post{
 		Title:       title,
@@ -83,7 +83,7 @@ func PostEdit(c *gin.Context) {
 		return
 	}
 	post.Tags, _ = models.ListTagByPostId(id)
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/modify.html", gin.H{
 		"post": post,
 		"user": user,
@@ -97,7 +97,7 @@ func PostUpdate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 
 	pid, err := strconv.ParseUint(id, 10, 64)
 	if err != nil {
@@ -187,7 +187,7 @@ func PostDelete(c *gin.Context) {
 
 func PostIndex(c *gin.Context) {
 	posts, _ := models.ListAllPost("")
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":    posts,
 		"Active":   "posts",

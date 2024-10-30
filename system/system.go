@@ -33,7 +33,7 @@ type Configuration struct {
 }
 
 const (
-	DEFAULT_PAGESIZE = 10
+	DefaultPageSize = 10
 )
 
 var configuration *Configuration
@@ -49,7 +49,7 @@ func LoadConfiguration(path string) error {
 		return err
 	}
 	if config.PageSize <= 0 {
-		config.PageSize = DEFAULT_PAGESIZE
+		config.PageSize = DefaultPageSize
 	}
 	configuration = &config
 	return err

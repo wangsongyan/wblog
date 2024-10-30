@@ -15,7 +15,7 @@ import (
 
 func SubscribeGet(c *gin.Context) {
 	count, _ := models.CountSubscriber()
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 		"total": count,
 		"user":  user,
@@ -170,7 +170,7 @@ func sendEmailToSubscribers(subject, body string) (err error) {
 
 func SubscriberIndex(c *gin.Context) {
 	subscribers, _ := models.ListSubscriber(false)
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/subscriber.html", gin.H{
 		"subscribers": subscribers,
 		"user":        user,

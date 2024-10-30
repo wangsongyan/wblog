@@ -121,7 +121,7 @@ func SigninPost(c *gin.Context) {
 	}
 	s := sessions.Default(c)
 	s.Clear()
-	s.Set(SESSION_KEY, user.ID)
+	s.Set(SessionKey, user.ID)
 	s.Save()
 	if user.IsAdmin {
 		c.Redirect(http.StatusMovedPermanently, "/admin/index")
@@ -140,12 +140,12 @@ func Oauth2Callback(c *gin.Context) {
 
 	// validate state
 	session := sessions.Default(c)
-	if len(state) == 0 || state != session.Get(SESSION_GITHUB_STATE) {
+	if len(state) == 0 || state != session.Get(SessionGithubState) {
 		c.Abort()
 		return
 	}
 	// remove state from session
-	session.Delete(SESSION_GITHUB_STATE)
+	session.Delete(SessionGithubState)
 	session.Save()
 
 	// exchange accesstoken by code
@@ -164,7 +164,7 @@ func Oauth2Callback(c *gin.Context) {
 		return
 	}
 
-	sessionUser, exists := c.Get(CONTEXT_USER_KEY)
+	sessionUser, exists := c.Get(ContextUserKey)
 	if exists { // 已登录
 		user, _ = sessionUser.(*models.User)
 		_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
@@ -197,7 +197,7 @@ func Oauth2Callback(c *gin.Context) {
 	if err == nil {
 		s := sessions.Default(c)
 		s.Clear()
-		s.Set(SESSION_KEY, user.ID)
+		s.Set(SessionKey, user.ID)
 		s.Save()
 		if user.IsAdmin {
 			c.Redirect(http.StatusMovedPermanently, "/admin/index")
@@ -254,7 +254,7 @@ func getGithubUserInfoByAccessToken(token string) (*GithubUserInfo, error) {
 }
 
 func ProfileGet(c *gin.Context) {
-	sessionUser, exists := c.Get(CONTEXT_USER_KEY)
+	sessionUser, exists := c.Get(ContextUserKey)
 	if exists {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":     sessionUser,
@@ -271,7 +271,7 @@ func ProfileUpdate(c *gin.Context) {
 	defer writeJSON(c, res)
 	avatarUrl := c.PostForm("avatarUrl")
 	nickName := c.PostForm("nickName")
-	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
+	sessionUser, _ := c.Get(ContextUserKey)
 	user, ok := sessionUser.(*models.User)
 	if !ok {
 		res["message"] = "server interval error"
@@ -293,7 +293,7 @@ func BindEmail(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	email := c.PostForm("email")
-	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
+	sessionUser, _ := c.Get(ContextUserKey)
 	user, ok := sessionUser.(*models.User)
 	if !ok {
 		res["message"] = "server interval error"
@@ -322,7 +322,7 @@ func UnbindEmail(c *gin.Context) {
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
+	sessionUser, _ := c.Get(ContextUserKey)
 	user, ok := sessionUser.(*models.User)
 	if !ok {
 		res["message"] = "server interval error"
@@ -346,7 +346,7 @@ func UnbindGithub(c *gin.Context) {
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	sessionUser, _ := c.Get(CONTEXT_USER_KEY)
+	sessionUser, _ := c.Get(ContextUserKey)
 	user, ok := sessionUser.(*models.User)
 	if !ok {
 		res["message"] = "server interval error"
@@ -367,7 +367,7 @@ func UnbindGithub(c *gin.Context) {
 
 func UserIndex(c *gin.Context) {
 	users, _ := models.ListUsers()
-	user, _ := c.Get(CONTEXT_USER_KEY)
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/user.html", gin.H{
 		"users":    users,
 		"user":     user,
