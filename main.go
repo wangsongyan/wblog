@@ -2,12 +2,6 @@ package main
 
 import (
 	"flag"
-	"html/template"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-
 	"github.com/cihub/seelog"
 	"github.com/claudiu/gocron"
 	"github.com/gin-contrib/sessions"
@@ -17,13 +11,23 @@ import (
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
+	"html/template"
+	"net/http"
+	"os"
+	"path/filepath"
 )
 
 func main() {
 
-	configFilePath := flag.String("C", "conf/conf.yaml", "config file path")
+	configFilePath := flag.String("C", "conf/conf.toml", "config file path")
 	logConfigPath := flag.String("L", "conf/seelog.xml", "log config file path")
+	generate := flag.Bool("g", false, "generate sample config file")
 	flag.Parse()
+
+	if *generate {
+		system.Generate()
+		os.Exit(0)
+	}
 
 	logger, err := seelog.LoggerFromConfigAsFile(*logConfigPath)
 	if err != nil {
@@ -57,7 +61,7 @@ func main() {
 	gocron.Every(7).Days().Do(controllers.Backup)
 	gocron.Start()
 
-	router.Static("/static", filepath.Join(getCurrentDirectory(), "./static"))
+	router.Static("/static", filepath.Join(helpers.GetCurrentDirectory(), system.GetConfiguration().PublicDir))
 
 	router.NoRoute(controllers.Handle404)
 	router.GET("/", controllers.IndexGet)
@@ -162,7 +166,10 @@ func main() {
 		authorized.POST("/new_batchmail", controllers.SendBatchMail)
 	}
 
-	router.Run(system.GetConfiguration().Addr)
+	err = router.Run(system.GetConfiguration().Addr)
+	if err != nil {
+		seelog.Critical(err)
+	}
 }
 
 func setTemplate(engine *gin.Engine) {
@@ -180,7 +187,7 @@ func setTemplate(engine *gin.Engine) {
 	}
 
 	engine.SetFuncMap(funcMap)
-	engine.LoadHTMLGlob(filepath.Join(getCurrentDirectory(), "./views/**/*"))
+	engine.LoadHTMLGlob(filepath.Join(helpers.GetCurrentDirectory(), system.GetConfiguration().ViewDir))
 }
 
 // setSessions initializes sessions & csrf middlewares
@@ -251,15 +258,3 @@ func AuthRequired() gin.HandlerFunc {
 		c.Abort()
 	}
 }
-
-func getCurrentDirectory() string {
-	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-	if err != nil {
-		seelog.Critical(err)
-	}
-	return strings.Replace(dir, "\\", "/", -1)
-}
-
-//func getCurrentDirectory() string {
-//	return ""
-//}

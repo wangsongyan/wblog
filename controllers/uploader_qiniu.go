@@ -33,6 +33,7 @@ func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHea
 	var (
 		ret  PutRet
 		size int64
+		cfg  = system.GetConfiguration()
 	)
 	if statInterface, ok := file.(Stat); ok {
 		fileInfo, _ := statInterface.Stat()
@@ -43,18 +44,17 @@ func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHea
 	}
 
 	putPolicy := storage.PutPolicy{
-		Scope: system.GetConfiguration().QiniuBucket,
+		Scope: cfg.Qiniu.Bucket,
 	}
-	mac := qbox.NewMac(system.GetConfiguration().QiniuAccessKey, system.GetConfiguration().QiniuSecretKey)
+	mac := qbox.NewMac(cfg.Qiniu.AccessKey, cfg.Qiniu.SecretKey)
 	token := putPolicy.UploadToken(mac)
-	cfg := storage.Config{}
-	uploader := storage.NewFormUploader(&cfg)
+	uploader := storage.NewFormUploader(&storage.Config{})
 	putExtra := storage.PutExtra{}
 
 	err = uploader.PutWithoutKey(context.Background(), &ret, token, file, size, &putExtra)
 	if err != nil {
 		return
 	}
-	url = system.GetConfiguration().QiniuFileServer + ret.Key
+	url = cfg.Qiniu.FileServer + ret.Key
 	return
 }

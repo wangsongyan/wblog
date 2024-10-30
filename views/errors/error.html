@@ -7,7 +7,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{template "meta.html"}}
+    {{template "meta.html" .}}
 
     <title>Page - {{.message}}</title>
 
@@ -35,7 +35,7 @@
 </head>
 
 <body>
-{{template "navigation.html"}}
+{{template "navigation.html" .}}
 
 <div class="container">
     <div class="alert alert-warning" role="alert">

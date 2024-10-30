@@ -9,15 +9,17 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">Wblog</a>
+            <a class="navbar-brand" href="/">{{.cfg.Title}}</a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
+                {{range $item := .cfg.Navigators}}
                 <li>
-                    <a href="/index">博文</a>
+                    <a href="{{$item.Url}}" {{if gt (len $item.Target) 0}}target="{{$item.Target}}"{{end}}>{{$item.Title}}</a>
                 </li>
-                <li>
+                {{end}}
+                <!--<li>
                     <a href="/page/6">关于</a>
                 </li>
                 <li>
@@ -25,7 +27,7 @@
                 </li>
                 <li>
                     <a href="/subscribe">订阅</a>
-                </li>
+                </li>-->
             </ul>
 
             <ul class="pull-right nav navbar-nav">

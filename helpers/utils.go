@@ -6,9 +6,11 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"github.com/cihub/seelog"
 	"io"
 	"net/smtp"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -42,6 +44,14 @@ func UUID() string {
 func GetCurrentTime() time.Time {
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	return time.Now().In(loc)
+}
+
+func GetCurrentDirectory() string {
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		seelog.Critical(err)
+	}
+	return strings.Replace(dir, "\\", "/", -1)
 }
 
 func SendToMail(user, password, host, to, subject, body, mailType string) error {

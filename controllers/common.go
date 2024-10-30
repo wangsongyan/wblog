@@ -28,14 +28,17 @@ func Handle404(c *gin.Context) {
 }
 
 func HandleMessage(c *gin.Context, message string) {
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusNotFound, "errors/error.html", gin.H{
 		"message": message,
+		"user":    user,
+		"cfg":     system.GetConfiguration(),
 	})
 }
 
 func sendMail(to, subject, body string) error {
-	c := system.GetConfiguration()
-	return helpers.SendToMail(c.SmtpUsername, c.SmtpPassword, c.SmtpHost, to, subject, body, "html")
+	cfg := system.GetConfiguration()
+	return helpers.SendToMail(cfg.Smtp.Username, cfg.Smtp.Password, cfg.Smtp.Host, to, subject, body, "html")
 }
 
 func NotifyEmail(subject, body string) error {
@@ -56,14 +59,14 @@ func NotifyEmail(subject, body string) error {
 }
 
 func CreateXMLSitemap() (err error) {
-	configuration := system.GetConfiguration()
-	folder := path.Join(configuration.Public, "sitemap")
+	cfg := system.GetConfiguration()
+	folder := path.Join(helpers.GetCurrentDirectory(), cfg.PublicDir, "sitemap")
 	err = os.MkdirAll(folder, os.ModePerm)
 	if err != nil {
 		seelog.Errorf("create folder:%v", err)
 		return
 	}
-	domain := configuration.Domain
+	domain := cfg.Domain
 	now := helpers.GetCurrentTime()
 	items := make([]sitemap.Item, 0)
 

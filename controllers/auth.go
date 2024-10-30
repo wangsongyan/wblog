@@ -19,10 +19,14 @@ func AuthGet(c *gin.Context) {
 	session.Set(SessionGithubState, uuid)
 	session.Save()
 
+	cfg := system.GetConfiguration()
+
 	authurl := "/signin"
 	switch authType {
 	case "github":
-		authurl = fmt.Sprintf(system.GetConfiguration().GithubAuthUrl, system.GetConfiguration().GithubClientId, uuid)
+		if cfg.Github.Enabled {
+			authurl = fmt.Sprintf(cfg.Github.AuthUrl, cfg.Github.ClientId, uuid)
+		}
 	case "weibo":
 	case "qq":
 	case "wechat":

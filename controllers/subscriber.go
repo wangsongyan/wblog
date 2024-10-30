@@ -19,6 +19,7 @@ func SubscribeGet(c *gin.Context) {
 	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 		"total": count,
 		"user":  user,
+		"cfg":   system.GetConfiguration(),
 	})
 }
 
@@ -175,6 +176,7 @@ func SubscriberIndex(c *gin.Context) {
 		"subscribers": subscribers,
 		"user":        user,
 		"comments":    models.MustListUnreadComment(),
+		"cfg":         system.GetConfiguration(),
 	})
 }
 

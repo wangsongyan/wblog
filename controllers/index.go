@@ -54,6 +54,7 @@ func IndexGet(c *gin.Context) {
 		"path":            c.Request.URL.Path,
 		"maxReadPosts":    models.MustListMaxReadPost(),
 		"maxCommentPosts": models.MustListMaxCommentPost(),
+		"cfg":             system.GetConfiguration(),
 	})
 }
 
@@ -66,5 +67,6 @@ func AdminIndex(c *gin.Context) {
 		"commentCount": models.CountComment(),
 		"user":         user,
 		"comments":     models.MustListUnreadComment(),
+		"cfg":          system.GetConfiguration(),
 	})
 }

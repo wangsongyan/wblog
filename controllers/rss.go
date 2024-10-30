@@ -12,13 +12,14 @@ import (
 )
 
 func RssGet(c *gin.Context) {
+	cfg := system.GetConfiguration()
 	now := helpers.GetCurrentTime()
 	domain := system.GetConfiguration().Domain
 	feed := &feeds.Feed{
-		Title:       "Wblog",
+		Title:       cfg.Title,
 		Link:        &feeds.Link{Href: domain},
-		Description: "Wblog,talk about golang,java and so on.",
-		Author:      &feeds.Author{Name: "Wangsongyan", Email: "wangsongyanlove@163.com"},
+		Description: cfg.Seo.Description,
+		Author:      &feeds.Author{Name: cfg.Seo.Author.Name, Email: cfg.Seo.Author.Email},
 		Created:     now,
 	}
 

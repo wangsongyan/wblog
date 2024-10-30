@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ func PostGet(c *gin.Context) {
 	c.HTML(http.StatusOK, "post/display.html", gin.H{
 		"post": post,
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -31,6 +33,7 @@ func PostNew(c *gin.Context) {
 	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/new.html", gin.H{
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -53,6 +56,7 @@ func PostCreate(c *gin.Context) {
 			"post":    post,
 			"message": err.Error(),
 			"user":    user,
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
@@ -87,6 +91,7 @@ func PostEdit(c *gin.Context) {
 	c.HTML(http.StatusOK, "post/modify.html", gin.H{
 		"post": post,
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -117,6 +122,7 @@ func PostUpdate(c *gin.Context) {
 			"post":    post,
 			"message": err.Error(),
 			"user":    user,
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
@@ -193,5 +199,6 @@ func PostIndex(c *gin.Context) {
 		"Active":   "posts",
 		"user":     user,
 		"comments": models.MustListUnreadComment(),
+		"cfg":      system.GetConfiguration(),
 	})
 }

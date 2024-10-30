@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strconv"
 
@@ -15,6 +16,7 @@ func LinkIndex(c *gin.Context) {
 		"links":    links,
 		"user":     user,
 		"comments": models.MustListUnreadComment(),
+		"cfg":      system.GetConfiguration(),
 	})
 }
 

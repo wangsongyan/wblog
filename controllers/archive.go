@@ -55,6 +55,7 @@ func ArchiveGet(c *gin.Context) {
 		"totalPage":       int(math.Ceil(float64(total) / float64(pageSize))),
 		"maxReadPosts":    models.MustListMaxReadPost(),
 		"maxCommentPosts": models.MustListMaxCommentPost(),
+		"cfg":             system.GetConfiguration(),
 	})
 
 }

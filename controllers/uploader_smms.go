@@ -51,7 +51,7 @@ func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHead
 	}
 	bodyWriter.Close()
 
-	resp, err = http.Post(system.GetConfiguration().SmmsFileServer, bodyWriter.FormDataContentType(), bodyBuf)
+	resp, err = http.Post(system.GetConfiguration().Smms.FileServer, bodyWriter.FormDataContentType(), bodyBuf)
 	if err != nil {
 		return
 	}

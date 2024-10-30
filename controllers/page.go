@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/wangsongyan/wblog/system"
 	"net/http"
 	"strconv"
 
@@ -21,6 +22,7 @@ func PageGet(c *gin.Context) {
 	c.HTML(http.StatusOK, "page/display.html", gin.H{
 		"page": page,
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -28,6 +30,7 @@ func PageNew(c *gin.Context) {
 	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "page/new.html", gin.H{
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -49,6 +52,7 @@ func PageCreate(c *gin.Context) {
 			"message": err.Error(),
 			"page":    page,
 			"user":    user,
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
@@ -65,6 +69,7 @@ func PageEdit(c *gin.Context) {
 	c.HTML(http.StatusOK, "page/modify.html", gin.H{
 		"page": page,
 		"user": user,
+		"cfg":  system.GetConfiguration(),
 	})
 }
 
@@ -139,5 +144,6 @@ func PageIndex(c *gin.Context) {
 		"pages":    pages,
 		"user":     user,
 		"comments": models.MustListUnreadComment(),
+		"cfg":      system.GetConfiguration(),
 	})
 }

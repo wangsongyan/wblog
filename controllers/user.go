@@ -212,13 +212,14 @@ func exchangeTokenByCode(code string) (accessToken string, err error) {
 	var (
 		transport *oauth.Transport
 		token     *oauth.Token
+		cfg       = system.GetConfiguration()
 	)
 	transport = &oauth.Transport{Config: &oauth.Config{
-		ClientId:     system.GetConfiguration().GithubClientId,
-		ClientSecret: system.GetConfiguration().GithubClientSecret,
-		RedirectURL:  system.GetConfiguration().GithubRedirectURL,
-		TokenURL:     system.GetConfiguration().GithubTokenUrl,
-		Scope:        system.GetConfiguration().GithubScope,
+		ClientId:     cfg.Github.ClientId,
+		ClientSecret: cfg.Github.ClientSecret,
+		RedirectURL:  cfg.Github.RedirectURL,
+		TokenURL:     cfg.Github.TokenUrl,
+		Scope:        cfg.Github.Scope,
 	}}
 	token, err = transport.Exchange(code)
 	if err != nil {
@@ -259,6 +260,7 @@ func ProfileGet(c *gin.Context) {
 		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
 			"user":     sessionUser,
 			"comments": models.MustListUnreadComment(),
+			"cfg":      system.GetConfiguration(),
 		})
 	}
 }
@@ -372,6 +374,7 @@ func UserIndex(c *gin.Context) {
 		"users":    users,
 		"user":     user,
 		"comments": models.MustListUnreadComment(),
+		"cfg":      system.GetConfiguration(),
 	})
 }
 

@@ -131,8 +131,8 @@ type SmmsFile struct {
 var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
-
-	db, err := gorm.Open("sqlite3", system.GetConfiguration().DSN)
+	cfg := system.GetConfiguration()
+	db, err := gorm.Open(cfg.Database.Dialect, cfg.Database.DSN)
 	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
 	if err == nil {
 		DB = db
@@ -516,14 +516,12 @@ func (user *User) Update() error {
 	return DB.Save(user).Error
 }
 
-//
 func GetUserByUsername(username string) (*User, error) {
 	var user User
 	err := DB.First(&user, "email = ?", username).Error
 	return &user, err
 }
 
-//
 func (user *User) FirstOrCreate() (*User, error) {
 	err := DB.FirstOrCreate(user, "github_login_id = ?", user.GithubLoginId).Error
 	return user, err

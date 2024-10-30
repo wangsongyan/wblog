@@ -40,6 +40,7 @@ func RestorePost(c *gin.Context) {
 		res       = gin.H{}
 		resp      *http.Response
 		bodyBytes []byte
+		cfg       = system.GetConfiguration()
 	)
 	defer writeJSON(c, res)
 	fileName = c.PostForm("fileName")
@@ -47,7 +48,7 @@ func RestorePost(c *gin.Context) {
 		res["message"] = "fileName cannot be empty."
 		return
 	}
-	fileUrl = system.GetConfiguration().QiniuFileServer + fileName
+	fileUrl = cfg.Qiniu.FileServer + fileName
 	resp, err = http.Get(fileUrl)
 	if err != nil {
 		res["message"] = err.Error()
@@ -60,8 +61,8 @@ func RestorePost(c *gin.Context) {
 		res["message"] = err.Error()
 		return
 	}
-	if len(system.GetConfiguration().BackupKey) > 0 {
-		bodyBytes, err = helpers.Decrypt(bodyBytes, []byte(system.GetConfiguration().BackupKey))
+	if len(cfg.Backup.BackupKey) > 0 {
+		bodyBytes, err = helpers.Decrypt(bodyBytes, []byte(cfg.Backup.BackupKey))
 		if err != nil {
 			res["message"] = err.Error()
 			return
@@ -81,8 +82,9 @@ func Backup() (err error) {
 		exist     bool
 		ret       PutRet
 		bodyBytes []byte
+		cfg       = system.GetConfiguration()
 	)
-	u, err = url.Parse(system.GetConfiguration().DSN)
+	u, err = url.Parse(cfg.Database.DSN)
 	if err != nil {
 		seelog.Debugf("parse dsn error:%v", err)
 		return
@@ -99,8 +101,8 @@ func Backup() (err error) {
 		seelog.Error(err)
 		return
 	}
-	if len(system.GetConfiguration().BackupKey) > 0 {
-		bodyBytes, err = helpers.Encrypt(bodyBytes, []byte(system.GetConfiguration().BackupKey))
+	if len(cfg.Backup.BackupKey) > 0 {
+		bodyBytes, err = helpers.Encrypt(bodyBytes, []byte(cfg.Backup.BackupKey))
 		if err != nil {
 			seelog.Error(err)
 			return
@@ -108,12 +110,11 @@ func Backup() (err error) {
 	}
 
 	putPolicy := storage.PutPolicy{
-		Scope: system.GetConfiguration().QiniuBucket,
+		Scope: cfg.Qiniu.Bucket,
 	}
-	mac := qbox.NewMac(system.GetConfiguration().QiniuAccessKey, system.GetConfiguration().QiniuSecretKey)
+	mac := qbox.NewMac(cfg.Qiniu.AccessKey, cfg.Qiniu.SecretKey)
 	token := putPolicy.UploadToken(mac)
-	cfg := storage.Config{}
-	uploader := storage.NewFormUploader(&cfg)
+	uploader := storage.NewFormUploader(&storage.Config{})
 	putExtra := storage.PutExtra{}
 
 	fileName := fmt.Sprintf("wblog_%s.db", helpers.GetCurrentTime().Format("20060102150405"))
