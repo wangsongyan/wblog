@@ -60,7 +60,7 @@ func CreateXMLSitemap() (err error) {
 	folder := path.Join(configuration.Public, "sitemap")
 	err = os.MkdirAll(folder, os.ModePerm)
 	if err != nil {
-		seelog.Error("create folder:%v", err)
+		seelog.Errorf("create folder:%v", err)
 		return
 	}
 	domain := configuration.Domain
@@ -76,7 +76,7 @@ func CreateXMLSitemap() (err error) {
 
 	posts, err := models.ListPublishedPost("", 0, 0)
 	if err != nil {
-		seelog.Error("models.ListPublishedPost:%v", err)
+		seelog.Errorf("models.ListPublishedPost:%v", err)
 		return
 	}
 	for _, post := range posts {
@@ -90,7 +90,7 @@ func CreateXMLSitemap() (err error) {
 
 	pages, err := models.ListPublishedPage()
 	if err != nil {
-		seelog.Error("models.ListPublishedPage:%v", err)
+		seelog.Errorf("models.ListPublishedPage:%v", err)
 		return
 	}
 	for _, page := range pages {
@@ -104,12 +104,12 @@ func CreateXMLSitemap() (err error) {
 
 	err = sitemap.SiteMap(path.Join(folder, "sitemap1.xml.gz"), items)
 	if err != nil {
-		seelog.Error("sitemap.SiteMap:%v", err)
+		seelog.Errorf("sitemap.SiteMap:%v", err)
 		return
 	}
 	err = sitemap.SiteMapIndex(folder, "sitemap_index.xml", domain+"/static/sitemap/")
 	if err != nil {
-		seelog.Error("sitemap.SiteMapIndex:%v", err)
+		seelog.Errorf("sitemap.SiteMapIndex:%v", err)
 		return
 	}
 	return
