@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3"
-	//_ "github.com/go-sql-driver/mysql"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/system"
@@ -25,8 +25,8 @@ type BaseModel struct {
 // table pages
 type Page struct {
 	BaseModel
-	Title       string // title
-	Body        string // body
+	Title       string `gorm:"type:text"`     // title
+	Body        string `gorm:"type:longtext"` // body
 	View        int    // view count
 	IsPublished bool   // published or not
 }
@@ -34,8 +34,8 @@ type Page struct {
 // table posts
 type Post struct {
 	BaseModel
-	Title        string     // title
-	Body         string     // body
+	Title        string     `gorm:"type:text"`     // title
+	Body         string     `gorm:"type:longtext"` // body
 	View         int        // view count
 	IsPublished  bool       // published or not
 	Tags         []*Tag     `gorm:"-"` // tags of post
@@ -78,7 +78,7 @@ type User struct {
 type Comment struct {
 	BaseModel
 	UserID    uint   // 用户id
-	Content   string // 内容
+	Content   string `gorm:"type:text"` // 内容
 	PostID    uint   // 文章id
 	ReadState bool   `gorm:"default:'0'"` // 阅读状态
 	//Replies []*Comment // 评论
