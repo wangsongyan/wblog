@@ -25,6 +25,7 @@ func SubscribeGet(c *gin.Context) {
 
 func Subscribe(c *gin.Context) {
 	mail := c.PostForm("mail")
+	user, _ := c.Get(ContextUserKey)
 	var err error
 	if len(mail) > 0 {
 		var subscriber *models.Subscriber
@@ -37,6 +38,8 @@ func Subscribe(c *gin.Context) {
 					c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 						"message": "subscribe succeed.",
 						"total":   count,
+						"user":    user,
+						"cfg":     system.GetConfiguration(),
 					})
 					return
 				}
@@ -61,6 +64,8 @@ func Subscribe(c *gin.Context) {
 					c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 						"message": "subscribe succeed.",
 						"total":   count,
+						"user":    user,
+						"cfg":     system.GetConfiguration(),
 					})
 					return
 				}
@@ -73,6 +78,8 @@ func Subscribe(c *gin.Context) {
 	c.HTML(http.StatusOK, "other/subscribe.html", gin.H{
 		"message": err.Error(),
 		"total":   count,
+		"user":    user,
+		"cfg":     system.GetConfiguration(),
 	})
 }
 
@@ -83,7 +90,7 @@ func sendActiveEmail(subscriber *models.Subscriber) (err error) {
 	subscriber.SecretKey = uuid
 	signature := helpers.Md5(subscriber.Email + uuid + subscriber.OutTime.Format("20060102150405"))
 	subscriber.Signature = signature
-	err = sendMail(subscriber.Email, "[Wblog]邮箱验证", fmt.Sprintf("%s/active?sid=%s", system.GetConfiguration().Domain, signature))
+	err = sendMail(subscriber.Email, fmt.Sprintf("[%s]邮箱验证", system.GetConfiguration().Title), fmt.Sprintf("%s/active?sid=%s", system.GetConfiguration().Domain, signature))
 	if err != nil {
 		return
 	}

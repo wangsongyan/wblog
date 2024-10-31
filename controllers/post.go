@@ -3,7 +3,6 @@ package controllers
 import (
 	"github.com/wangsongyan/wblog/system"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +10,11 @@ import (
 )
 
 func PostGet(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
 	post, err := models.GetPostById(id)
 	if err != nil || !post.IsPublished {
 		Handle404(c)
@@ -30,9 +33,8 @@ func PostGet(c *gin.Context) {
 }
 
 func PostNew(c *gin.Context) {
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/new.html", gin.H{
-		"user": user,
+		"user": c.MustGet(ContextUserKey),
 		"cfg":  system.GetConfiguration(),
 	})
 }
@@ -43,7 +45,6 @@ func PostCreate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	user, _ := c.Get(ContextUserKey)
 
 	post := &models.Post{
 		Title:       title,
@@ -55,7 +56,7 @@ func PostCreate(c *gin.Context) {
 		c.HTML(http.StatusOK, "post/new.html", gin.H{
 			"post":    post,
 			"message": err.Error(),
-			"user":    user,
+			"user":    c.MustGet(ContextUserKey),
 			"cfg":     system.GetConfiguration(),
 		})
 		return
@@ -65,13 +66,13 @@ func PostCreate(c *gin.Context) {
 	if len(tags) > 0 {
 		tagArr := strings.Split(tags, ",")
 		for _, tag := range tagArr {
-			tagId, err := strconv.ParseUint(tag, 10, 64)
+			tagId, err := parseUint(tag)
 			if err != nil {
 				continue
 			}
 			pt := &models.PostTag{
 				PostId: post.ID,
-				TagId:  uint(tagId),
+				TagId:  tagId,
 			}
 			pt.Insert()
 		}
@@ -80,33 +81,34 @@ func PostCreate(c *gin.Context) {
 }
 
 func PostEdit(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
 	post, err := models.GetPostById(id)
 	if err != nil {
 		Handle404(c)
 		return
 	}
 	post.Tags, _ = models.ListTagByPostId(id)
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "post/modify.html", gin.H{
 		"post": post,
-		"user": user,
+		"user": c.MustGet(ContextUserKey),
 		"cfg":  system.GetConfiguration(),
 	})
 }
 
 func PostUpdate(c *gin.Context) {
-	id := c.Param("id")
 	tags := c.PostForm("tags")
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	user, _ := c.Get(ContextUserKey)
 
-	pid, err := strconv.ParseUint(id, 10, 64)
+	id, err := ParamUint(c, "id")
 	if err != nil {
-		Handle404(c)
+		HandleMessage(c, err.Error())
 		return
 	}
 
@@ -115,13 +117,13 @@ func PostUpdate(c *gin.Context) {
 		Body:        body,
 		IsPublished: published,
 	}
-	post.ID = uint(pid)
+	post.ID = id
 	err = post.Update()
 	if err != nil {
 		c.HTML(http.StatusOK, "post/modify.html", gin.H{
 			"post":    post,
 			"message": err.Error(),
-			"user":    user,
+			"user":    c.MustGet(ContextUserKey),
 			"cfg":     system.GetConfiguration(),
 		})
 		return
@@ -132,13 +134,13 @@ func PostUpdate(c *gin.Context) {
 	if len(tags) > 0 {
 		tagArr := strings.Split(tags, ",")
 		for _, tag := range tagArr {
-			tagId, err := strconv.ParseUint(tag, 10, 64)
+			tagId, err := parseUint(tag)
 			if err != nil {
 				continue
 			}
 			pt := &models.PostTag{
 				PostId: post.ID,
-				TagId:  uint(tagId),
+				TagId:  tagId,
 			}
 			pt.Insert()
 		}
@@ -153,7 +155,11 @@ func PostPublish(c *gin.Context) {
 		post *models.Post
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		res["message"] = err.Error()
+		return
+	}
 	post, err = models.GetPostById(id)
 	if err != nil {
 		res["message"] = err.Error()
@@ -174,20 +180,19 @@ func PostDelete(c *gin.Context) {
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
-	pid, err := strconv.ParseUint(id, 10, 64)
+	id, err := ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	post := &models.Post{}
-	post.ID = uint(pid)
+	post.ID = id
 	err = post.Delete()
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
-	models.DeletePostTagByPostId(uint(pid))
+	models.DeletePostTagByPostId(id)
 	res["succeed"] = true
 }
 

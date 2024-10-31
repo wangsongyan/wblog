@@ -1,16 +1,18 @@
 package controllers
 
 import (
-	"github.com/wangsongyan/wblog/system"
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/models"
+	"github.com/wangsongyan/wblog/system"
+	"net/http"
 )
 
 func PageGet(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
 	page, err := models.GetPageById(id)
 	if err != nil || !page.IsPublished {
 		Handle404(c)
@@ -27,9 +29,8 @@ func PageGet(c *gin.Context) {
 }
 
 func PageNew(c *gin.Context) {
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "page/new.html", gin.H{
-		"user": user,
+		"user": c.MustGet(ContextUserKey),
 		"cfg":  system.GetConfiguration(),
 	})
 }
@@ -39,7 +40,6 @@ func PageCreate(c *gin.Context) {
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	user, _ := c.Get(ContextUserKey)
 
 	page := &models.Page{
 		Title:       title,
@@ -51,7 +51,7 @@ func PageCreate(c *gin.Context) {
 		c.HTML(http.StatusOK, "page/new.html", gin.H{
 			"message": err.Error(),
 			"page":    page,
-			"user":    user,
+			"user":    c.MustGet(ContextUserKey),
 			"cfg":     system.GetConfiguration(),
 		})
 		return
@@ -60,32 +60,34 @@ func PageCreate(c *gin.Context) {
 }
 
 func PageEdit(c *gin.Context) {
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
 	page, err := models.GetPageById(id)
 	if err != nil {
 		Handle404(c)
 	}
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "page/modify.html", gin.H{
 		"page": page,
-		"user": user,
+		"user": c.MustGet(ContextUserKey),
 		"cfg":  system.GetConfiguration(),
 	})
 }
 
 func PageUpdate(c *gin.Context) {
-	id := c.Param("id")
 	title := c.PostForm("title")
 	body := c.PostForm("body")
 	isPublished := c.PostForm("isPublished")
 	published := "on" == isPublished
-	pid, err := strconv.ParseUint(id, 10, 64)
+	id, err := ParamUint(c, "id")
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 	page := &models.Page{Title: title, Body: body, IsPublished: published}
-	page.ID = uint(pid)
+	page.ID = id
 	err = page.Update()
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
@@ -100,7 +102,11 @@ func PagePublish(c *gin.Context) {
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
 	page, err := models.GetPageById(id)
 	if err != nil {
 		res["message"] = err.Error()
@@ -121,14 +127,13 @@ func PageDelete(c *gin.Context) {
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
-	pid, err := strconv.ParseUint(id, 10, 64)
+	id, err := ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	page := &models.Page{}
-	page.ID = uint(pid)
+	page.ID = id
 	err = page.Delete()
 	if err != nil {
 		res["message"] = err.Error()

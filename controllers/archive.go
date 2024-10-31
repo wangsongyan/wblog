@@ -43,7 +43,7 @@ func ArchiveGet(c *gin.Context) {
 	}
 	policy = bluemonday.StrictPolicy()
 	for _, post := range posts {
-		post.Tags, _ = models.ListTagByPostId(strconv.FormatUint(uint64(post.ID), 10))
+		post.Tags, _ = models.ListTagByPostId(post.ID)
 		post.Body = policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
 	}
 	user, _ := c.Get(ContextUserKey)

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	"github.com/cihub/seelog"
@@ -116,6 +117,26 @@ func CreateXMLSitemap() (err error) {
 		return
 	}
 	return
+}
+
+func QueryUint(c *gin.Context, key string) (uint, error) {
+	return parseUint(c.Query(key))
+}
+
+func ParamUint(c *gin.Context, key string) (uint, error) {
+	return parseUint(c.Param(key))
+}
+
+func PostFormUint(c *gin.Context, key string) (uint, error) {
+	return parseUint(c.PostForm(key))
+}
+
+func parseUint(value string) (uint, error) {
+	val, err := strconv.ParseUint(value, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return uint(val), nil
 }
 
 func writeJSON(ctx *gin.Context, h gin.H) {

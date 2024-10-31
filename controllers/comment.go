@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/dchest/captcha"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -23,27 +21,24 @@ func CommentPost(c *gin.Context) {
 	userId, _ := sessionUserID.(uint)
 
 	verifyCode := c.PostForm("verifyCode")
-	captchaId := s.Get(SessionCaptcha)
 	s.Delete(SessionCaptcha)
-	_captchaId, _ := captchaId.(string)
-	if !captcha.VerifyString(_captchaId, verifyCode) {
-		res["message"] = "error verifycode"
+	captchaId, _ := s.Get(SessionCaptcha).(string)
+	if !captcha.VerifyString(captchaId, verifyCode) {
+		res["message"] = "error verifyCode"
 		return
 	}
 
-	postId := c.PostForm("postId")
 	content := c.PostForm("content")
 	if len(content) == 0 {
 		res["message"] = "content cannot be empty."
 		return
 	}
-
-	post, err = models.GetPostById(postId)
+	pid, err := PostFormUint(c, "postId")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
-	pid, err := strconv.ParseUint(postId, 10, 64)
+	post, err = models.GetPostById(uint(pid))
 	if err != nil {
 		res["message"] = err.Error()
 		return
@@ -66,7 +61,7 @@ func CommentDelete(c *gin.Context) {
 	var (
 		err error
 		res = gin.H{}
-		cid uint64
+		cid uint
 	)
 	defer writeJSON(c, res)
 
@@ -74,16 +69,15 @@ func CommentDelete(c *gin.Context) {
 	sessionUserID := s.Get(SessionKey)
 	userId, _ := sessionUserID.(uint)
 
-	commentId := c.Param("id")
-	cid, err = strconv.ParseUint(commentId, 10, 64)
+	cid, err = ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	comment := &models.Comment{
-		UserID: uint(userId),
+		UserID: userId,
 	}
-	comment.ID = uint(cid)
+	comment.ID = cid
 	err = comment.Delete()
 	if err != nil {
 		res["message"] = err.Error()
@@ -94,20 +88,18 @@ func CommentDelete(c *gin.Context) {
 
 func CommentRead(c *gin.Context) {
 	var (
-		id  string
-		_id uint64
+		id  uint
 		err error
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id = c.Param("id")
-	_id, err = strconv.ParseUint(id, 10, 64)
+	id, err = ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	comment := new(models.Comment)
-	comment.ID = uint(_id)
+	comment.ID = id
 	err = comment.Update()
 	if err != nil {
 		res["message"] = err.Error()

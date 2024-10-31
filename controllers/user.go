@@ -3,10 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-
 	"github.com/alimoeeny/gooauth2"
 	"github.com/cihub/seelog"
 	"github.com/gin-contrib/sessions"
@@ -15,6 +11,8 @@ import (
 	"github.com/wangsongyan/wblog/helpers"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
+	"io/ioutil"
+	"net/http"
 )
 
 type GithubUserInfo struct {
@@ -51,11 +49,15 @@ type GithubUserInfo struct {
 }
 
 func SigninGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "auth/signin.html", nil)
+	c.HTML(http.StatusOK, "auth/signin.html", gin.H{
+		"cfg": system.GetConfiguration(),
+	})
 }
 
 func SignupGet(c *gin.Context) {
-	c.HTML(http.StatusOK, "auth/signup.html", nil)
+	c.HTML(http.StatusOK, "auth/signup.html", gin.H{
+		"cfg": system.GetConfiguration(),
+	})
 }
 
 func LogoutGet(c *gin.Context) {
@@ -377,18 +379,17 @@ func UserIndex(c *gin.Context) {
 func UserLock(c *gin.Context) {
 	var (
 		err  error
-		_id  uint64
+		id   uint
 		res  = gin.H{}
 		user *models.User
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
-	_id, err = strconv.ParseUint(id, 10, 64)
+	id, err = ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
-	user, err = models.GetUser(uint(_id))
+	user, err = models.GetUser(id)
 	if err != nil {
 		res["message"] = err.Error()
 		return

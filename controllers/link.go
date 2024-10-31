@@ -21,27 +21,22 @@ func LinkIndex(c *gin.Context) {
 
 func LinkCreate(c *gin.Context) {
 	var (
-		err   error
-		res   = gin.H{}
-		_sort int64
+		err  error
+		res  = gin.H{}
+		sort int
 	)
 	defer writeJSON(c, res)
 	name := c.PostForm("name")
 	url := c.PostForm("url")
-	sort := c.PostForm("sort")
 	if len(name) == 0 || len(url) == 0 {
 		res["message"] = "error parameter"
 		return
 	}
-	_sort, err = strconv.ParseInt(sort, 10, 64)
-	if err != nil {
-		res["message"] = err.Error()
-		return
-	}
+	sort, _ = strconv.Atoi(c.PostForm("sort"))
 	link := &models.Link{
 		Name: name,
 		Url:  url,
-		Sort: int(_sort),
+		Sort: sort,
 	}
 	err = link.Insert()
 	if err != nil {
@@ -53,36 +48,30 @@ func LinkCreate(c *gin.Context) {
 
 func LinkUpdate(c *gin.Context) {
 	var (
-		_id   uint64
-		_sort int64
-		err   error
-		res   = gin.H{}
+		id   uint
+		sort int
+		err  error
+		res  = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
 	name := c.PostForm("name")
 	url := c.PostForm("url")
-	sort := c.PostForm("sort")
-	if len(id) == 0 || len(name) == 0 || len(url) == 0 {
+	if len(name) == 0 || len(url) == 0 {
 		res["message"] = "error parameter"
 		return
 	}
-	_id, err = strconv.ParseUint(id, 10, 64)
+	id, err = ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
-	_sort, err = strconv.ParseInt(sort, 10, 64)
-	if err != nil {
-		res["message"] = err.Error()
-		return
-	}
+	sort, _ = strconv.Atoi(c.PostForm("sort"))
 	link := &models.Link{
 		Name: name,
 		Url:  url,
-		Sort: int(_sort),
+		Sort: sort,
 	}
-	link.ID = uint(_id)
+	link.ID = id
 	err = link.Update()
 	if err != nil {
 		res["message"] = err.Error()
@@ -92,9 +81,12 @@ func LinkUpdate(c *gin.Context) {
 }
 
 func LinkGet(c *gin.Context) {
-	id := c.Param("id")
-	_id, _ := strconv.ParseInt(id, 10, 64)
-	link, err := models.GetLinkById(uint(_id))
+	id, err := ParamUint(c, "id")
+	if err != nil {
+		HandleMessage(c, err.Error())
+		return
+	}
+	link, err := models.GetLinkById(id)
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
@@ -107,19 +99,18 @@ func LinkGet(c *gin.Context) {
 func LinkDelete(c *gin.Context) {
 	var (
 		err error
-		_id uint64
+		id  uint
 		res = gin.H{}
 	)
 	defer writeJSON(c, res)
-	id := c.Param("id")
-	_id, err = strconv.ParseUint(id, 10, 64)
+	id, err = ParamUint(c, "id")
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 
 	link := new(models.Link)
-	link.ID = uint(_id)
+	link.ID = id
 	err = link.Delete()
 	if err != nil {
 		res["message"] = err.Error()

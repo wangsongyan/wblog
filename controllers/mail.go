@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -12,7 +11,7 @@ func SendMail(c *gin.Context) {
 	var (
 		err        error
 		res        = gin.H{}
-		uid        uint64
+		uid        uint
 		subscriber *models.Subscriber
 	)
 	defer writeJSON(c, res)
@@ -24,12 +23,12 @@ func SendMail(c *gin.Context) {
 		res["message"] = "error parameter"
 		return
 	}
-	uid, err = strconv.ParseUint(userId, 10, 64)
+	uid, err = parseUint(userId)
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
-	subscriber, err = models.GetSubscriberById(uint(uid))
+	subscriber, err = models.GetSubscriberById(uid)
 	if err != nil {
 		res["message"] = err.Error()
 		return
