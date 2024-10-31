@@ -118,7 +118,7 @@ func defaultConfig() Configuration {
 			AccessKey:  "",
 			SecretKey:  "",
 			FileServer: "",
-			Bucket:     "",
+			Bucket:     "wblog",
 		},
 		Smms: Smms{
 			ApiUrl: "https://sm.ms/api/v2/upload",
