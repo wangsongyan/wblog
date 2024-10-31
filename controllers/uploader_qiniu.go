@@ -4,6 +4,7 @@ import (
 	"context"
 	"mime/multipart"
 	"os"
+	"strings"
 
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
@@ -55,6 +56,10 @@ func (u QiniuUploader) upload(file multipart.File, _ *multipart.FileHeader) (url
 	if err != nil {
 		return
 	}
-	url = cfg.Qiniu.FileServer + ret.Key
+	if strings.HasSuffix(cfg.Qiniu.FileServer, "/") {
+		url = cfg.Qiniu.FileServer + ret.Key
+	} else {
+		url = cfg.Qiniu.FileServer + "/" + ret.Key
+	}
 	return
 }

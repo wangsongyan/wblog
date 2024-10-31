@@ -30,6 +30,10 @@ func Upload(c *gin.Context) {
 	if cfg.FileServer == "qiniu" && cfg.Qiniu.Enabled {
 		uploader = QiniuUploader{}
 	}
+	if uploader == nil {
+		res["message"] = "no available fileserver"
+		return
+	}
 	url, err = uploader.upload(file, fh)
 	if err != nil {
 		res["message"] = err.Error()
