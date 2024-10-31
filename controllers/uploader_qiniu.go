@@ -29,7 +29,7 @@ type PutRet struct {
 type QiniuUploader struct {
 }
 
-func (u QiniuUploader) upload(file multipart.File, fileHeader *multipart.FileHeader) (url string, err error) {
+func (u QiniuUploader) upload(file multipart.File, _ *multipart.FileHeader) (url string, err error) {
 	var (
 		ret  PutRet
 		size int64
