@@ -48,6 +48,16 @@ func RestorePost(c *gin.Context) {
 		res["message"] = "fileName cannot be empty."
 		return
 	}
+
+	if cfg.Database.Dialect != "sqlite" {
+		res["message"] = "only support sqlite dialect"
+		return
+	}
+	if !cfg.Backup.Enabled || !cfg.Qiniu.Enabled {
+		res["message"] = "backup or quniu not enabled"
+		return
+	}
+
 	fileUrl = cfg.Qiniu.FileServer + fileName
 	resp, err = http.Get(fileUrl)
 	if err != nil {
@@ -84,6 +94,16 @@ func Backup() (err error) {
 		bodyBytes []byte
 		cfg       = system.GetConfiguration()
 	)
+
+	if cfg.Database.Dialect != "sqlite" {
+		err = errors.New("only support sqlite dialect")
+		return
+	}
+	if !cfg.Backup.Enabled || !cfg.Qiniu.Enabled {
+		err = errors.New("backup or quniu not enabled")
+		return
+	}
+
 	u, err = url.Parse(cfg.Database.DSN)
 	if err != nil {
 		seelog.Debugf("parse dsn error:%v", err)
