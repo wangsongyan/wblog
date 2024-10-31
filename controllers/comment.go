@@ -14,6 +14,7 @@ func CommentPost(c *gin.Context) {
 		err  error
 		res  = gin.H{}
 		post *models.Post
+		cfg  = system.GetConfiguration()
 	)
 	defer writeJSON(c, res)
 	s := sessions.Default(c)
@@ -53,7 +54,7 @@ func CommentPost(c *gin.Context) {
 		res["message"] = err.Error()
 		return
 	}
-	NotifyEmail("[wblog]您有一条新评论", fmt.Sprintf("<a href=\"%s/post/%d\" target=\"_blank\">%s</a>:%s", system.GetConfiguration().Domain, post.ID, post.Title, content))
+	NotifyEmail(fmt.Sprintf("[%s]您有一条新评论", cfg.Title), fmt.Sprintf("<a href=\"%s/post/%d\" target=\"_blank\">%s</a>:%s", cfg.Domain, post.ID, post.Title, content))
 	res["succeed"] = true
 }
 

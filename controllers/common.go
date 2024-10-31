@@ -39,6 +39,9 @@ func HandleMessage(c *gin.Context, message string) {
 
 func sendMail(to, subject, body string) error {
 	cfg := system.GetConfiguration()
+	if !cfg.Smtp.Enabled {
+		return nil
+	}
 	return helpers.SendToMail(cfg.Smtp.Username, cfg.Smtp.Password, cfg.Smtp.Host, to, subject, body, "html")
 }
 
