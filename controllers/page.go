@@ -139,10 +139,9 @@ func PageDelete(c *gin.Context) {
 
 func PageIndex(c *gin.Context) {
 	pages, _ := models.ListAllPage()
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/page.html", gin.H{
 		"pages":    pages,
-		"user":     user,
+		"user":     c.MustGet(ContextUserKey),
 		"comments": models.MustListUnreadComment(),
 		"cfg":      system.GetConfiguration(),
 	})

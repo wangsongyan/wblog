@@ -171,10 +171,9 @@ func sendEmailToSubscribers(subject, body string) (err error) {
 
 func SubscriberIndex(c *gin.Context) {
 	subscribers, _ := models.ListSubscriber(false)
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/subscriber.html", gin.H{
 		"subscribers": subscribers,
-		"user":        user,
+		"user":        c.MustGet(ContextUserKey),
 		"comments":    models.MustListUnreadComment(),
 		"cfg":         system.GetConfiguration(),
 	})

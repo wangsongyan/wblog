@@ -46,6 +46,7 @@ func ArchiveGet(c *gin.Context) {
 		post.Tags, _ = models.ListTagByPostId(strconv.FormatUint(uint64(post.ID), 10))
 		post.Body = policy.Sanitize(string(blackfriday.MarkdownCommon([]byte(post.Body))))
 	}
+	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "index/index.html", gin.H{
 		"posts":           posts,
 		"tags":            models.MustListTag(),
@@ -55,6 +56,7 @@ func ArchiveGet(c *gin.Context) {
 		"totalPage":       int(math.Ceil(float64(total) / float64(pageSize))),
 		"maxReadPosts":    models.MustListMaxReadPost(),
 		"maxCommentPosts": models.MustListMaxCommentPost(),
+		"user":            user,
 		"cfg":             system.GetConfiguration(),
 	})
 

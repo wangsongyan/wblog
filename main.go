@@ -83,7 +83,7 @@ func main() {
 	router.GET("/captcha", controllers.CaptchaGet)
 
 	visitor := router.Group("/visitor")
-	visitor.Use(AuthRequired())
+	visitor.Use(AuthRequired(false))
 	{
 		visitor.POST("/new_comment", controllers.CommentPost)
 		visitor.POST("/comment/:id/delete", controllers.CommentDelete)
@@ -103,7 +103,7 @@ func main() {
 	router.GET("/link/:id", controllers.LinkGet)
 
 	authorized := router.Group("/admin")
-	authorized.Use(AdminScopeRequired())
+	authorized.Use(AuthRequired(true))
 	{
 		// index
 		authorized.GET("/index", controllers.AdminIndex)
@@ -226,27 +226,11 @@ func SharedData() gin.HandlerFunc {
 	}
 }
 
-// AuthRequired grants access to authenticated users, requires SharedData middleware
-func AdminScopeRequired() gin.HandlerFunc {
+// AuthRequired grants access to authenticated users
+func AuthRequired(adminScope bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if user, _ := c.Get(controllers.ContextUserKey); user != nil {
-			if u, ok := user.(*models.User); ok && u.IsAdmin {
-				c.Next()
-				return
-			}
-		}
-		seelog.Warnf("User not authorized to visit %s", c.Request.RequestURI)
-		c.HTML(http.StatusForbidden, "errors/error.html", gin.H{
-			"message": "Forbidden!",
-		})
-		c.Abort()
-	}
-}
-
-func AuthRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if user, _ := c.Get(controllers.ContextUserKey); user != nil {
-			if _, ok := user.(*models.User); ok {
+			if u, ok := user.(*models.User); ok && (!adminScope || u.IsAdmin) {
 				c.Next()
 				return
 			}

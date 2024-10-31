@@ -193,11 +193,10 @@ func PostDelete(c *gin.Context) {
 
 func PostIndex(c *gin.Context) {
 	posts, _ := models.ListAllPost("")
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/post.html", gin.H{
 		"posts":    posts,
 		"Active":   "posts",
-		"user":     user,
+		"user":     c.MustGet(ContextUserKey),
 		"comments": models.MustListUnreadComment(),
 		"cfg":      system.GetConfiguration(),
 	})

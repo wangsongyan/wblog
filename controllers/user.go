@@ -255,14 +255,11 @@ func getGithubUserInfoByAccessToken(token string) (*GithubUserInfo, error) {
 }
 
 func ProfileGet(c *gin.Context) {
-	sessionUser, exists := c.Get(ContextUserKey)
-	if exists {
-		c.HTML(http.StatusOK, "admin/profile.html", gin.H{
-			"user":     sessionUser,
-			"comments": models.MustListUnreadComment(),
-			"cfg":      system.GetConfiguration(),
-		})
-	}
+	c.HTML(http.StatusOK, "admin/profile.html", gin.H{
+		"user":     c.MustGet(ContextUserKey),
+		"comments": models.MustListUnreadComment(),
+		"cfg":      system.GetConfiguration(),
+	})
 }
 
 func ProfileUpdate(c *gin.Context) {
@@ -369,10 +366,9 @@ func UnbindGithub(c *gin.Context) {
 
 func UserIndex(c *gin.Context) {
 	users, _ := models.ListUsers()
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/user.html", gin.H{
 		"users":    users,
-		"user":     user,
+		"user":     c.MustGet(ContextUserKey),
 		"comments": models.MustListUnreadComment(),
 		"cfg":      system.GetConfiguration(),
 	})

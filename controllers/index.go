@@ -59,13 +59,12 @@ func IndexGet(c *gin.Context) {
 }
 
 func AdminIndex(c *gin.Context) {
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/index.html", gin.H{
 		"pageCount":    models.CountPage(),
 		"postCount":    models.CountPost(),
 		"tagCount":     models.CountTag(),
 		"commentCount": models.CountComment(),
-		"user":         user,
+		"user":         c.MustGet(ContextUserKey),
 		"comments":     models.MustListUnreadComment(),
 		"cfg":          system.GetConfiguration(),
 	})

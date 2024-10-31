@@ -11,10 +11,9 @@ import (
 
 func LinkIndex(c *gin.Context) {
 	links, _ := models.ListLinks()
-	user, _ := c.Get(ContextUserKey)
 	c.HTML(http.StatusOK, "admin/link.html", gin.H{
 		"links":    links,
-		"user":     user,
+		"user":     c.MustGet(ContextUserKey),
 		"comments": models.MustListUnreadComment(),
 		"cfg":      system.GetConfiguration(),
 	})
