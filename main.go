@@ -47,7 +47,10 @@ func main() {
 		seelog.Critical("err open databases", err)
 		return
 	}
-	defer db.Close()
+	defer func() {
+		dbInstance, _ := db.DB()
+		_ = dbInstance.Close()
+	}()
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()

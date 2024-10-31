@@ -3,16 +3,14 @@ package models
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
-	"strconv"
-	"time"
-
-	_ "github.com/glebarez/sqlite"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
+	"github.com/glebarez/sqlite"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/system"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"html/template"
+	"time"
 )
 
 // I don't need soft delete,so I use customized BaseModel instead gorm.Model
@@ -53,8 +51,8 @@ type Tag struct {
 // table post_tags
 type PostTag struct {
 	BaseModel
-	PostId uint // post id
-	TagId  uint // tag id
+	PostId uint `gorm:"uniqueIndex:uk_post_tag"` // post id
+	TagId  uint `gorm:"uniqueIndex:uk_post_tag"` // tag id
 }
 
 // table users
@@ -71,7 +69,7 @@ type User struct {
 	IsAdmin       bool      //是否是管理员
 	AvatarUrl     string    // 头像链接
 	NickName      string    // 昵称
-	LockState     bool      `gorm:"default:'0'"` //锁定状态
+	LockState     bool      `gorm:"default:false"` //锁定状态
 }
 
 // table comments
@@ -80,7 +78,7 @@ type Comment struct {
 	UserID    uint   // 用户id
 	Content   string `gorm:"type:text"` // 内容
 	PostID    uint   // 文章id
-	ReadState bool   `gorm:"default:'0'"` // 阅读状态
+	ReadState bool   `gorm:"default:false"` // 阅读状态
 	//Replies []*Comment // 评论
 	NickName  string `gorm:"-"`
 	AvatarUrl string `gorm:"-"`
@@ -90,9 +88,9 @@ type Comment struct {
 // table subscribe
 type Subscriber struct {
 	gorm.Model
-	Email          string    `gorm:"unique_index"` //邮箱
-	VerifyState    bool      `gorm:"default:'0'"`  //验证状态
-	SubscribeState bool      `gorm:"default:'1'"`  //订阅状态
+	Email          string    `gorm:"type:varchar(255),unique_index"` //邮箱
+	VerifyState    bool      `gorm:"default:false"`                  //验证状态
+	SubscribeState bool      `gorm:"default:true"`                   //订阅状态
 	OutTime        time.Time //过期时间
 	SecretKey      string    // 秘钥
 	Signature      string    //签名
@@ -103,7 +101,7 @@ type Link struct {
 	gorm.Model
 	Name string //名称
 	Url  string //地址
-	Sort int    `gorm:"default:'0'"` //排序
+	Sort int    `gorm:"default:0"` //排序
 	View int    //访问次数
 }
 
@@ -131,17 +129,23 @@ type SmmsFile struct {
 var DB *gorm.DB
 
 func InitDB() (*gorm.DB, error) {
-	cfg := system.GetConfiguration()
-	db, err := gorm.Open(cfg.Database.Dialect, cfg.Database.DSN)
-	//db, err := gorm.Open("mysql", "root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia/Shanghai")
-	if err == nil {
-		DB = db
-		//db.LogMode(true)
-		db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{}, &SmmsFile{})
-		db.Model(&PostTag{}).AddUniqueIndex("uk_post_tag", "post_id", "tag_id")
-		return db, err
+	var (
+		db  *gorm.DB
+		err error
+		cfg = system.GetConfiguration()
+	)
+	if cfg.Database.Dialect == "sqlite" {
+		db, err = gorm.Open(sqlite.Open(cfg.Database.DSN), &gorm.Config{})
+	} else if cfg.Database.Dialect == "mysql" {
+		db, err = gorm.Open(mysql.Open(cfg.Database.DSN), &gorm.Config{})
 	}
-	return nil, err
+	if err != nil {
+		return nil, err
+	}
+	DB = db
+	//db.LogMode(true)
+	db.AutoMigrate(&Page{}, &Post{}, &Tag{}, &PostTag{}, &User{}, &Comment{}, &Subscriber{}, &Link{}, &SmmsFile{})
+	return db, err
 }
 
 // Page
@@ -167,13 +171,9 @@ func (page *Page) Delete() error {
 	return DB.Delete(page).Error
 }
 
-func GetPageById(id string) (*Page, error) {
-	pid, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+func GetPageById(id uint) (*Page, error) {
 	var page Page
-	err = DB.First(&page, "id = ?", pid).Error
+	err := DB.First(&page, "id = ?", id).Error
 	return &page, err
 }
 
@@ -196,8 +196,8 @@ func _listPage(published bool) ([]*Page, error) {
 	return pages, err
 }
 
-func CountPage() int {
-	var count int
+func CountPage() int64 {
+	var count int64
 	DB.Model(&Page{}).Count(&count)
 	return count
 }
@@ -245,14 +245,10 @@ func ListAllPost(tag string) ([]*Post, error) {
 	return _listPost(tag, false, 0, 0)
 }
 
-func _listPost(tag string, published bool, pageIndex, pageSize int) ([]*Post, error) {
+func _listPost(tagId string, published bool, pageIndex, pageSize int) ([]*Post, error) {
 	var posts []*Post
 	var err error
-	if len(tag) > 0 {
-		tagId, err := strconv.ParseUint(tag, 10, 64)
-		if err != nil {
-			return nil, err
-		}
+	if len(tagId) > 0 {
 		var rows *sql.Rows
 		if published {
 			if pageIndex > 0 {
@@ -318,15 +314,8 @@ func ListMaxCommentPost() (posts []*Post, err error) {
 	return
 }
 
-func CountPostByTag(tag string) (count int, err error) {
-	var (
-		tagId uint64
-	)
-	if len(tag) > 0 {
-		tagId, err = strconv.ParseUint(tag, 10, 64)
-		if err != nil {
-			return
-		}
+func CountPostByTag(tagId string) (count int, err error) {
+	if len(tagId) > 0 {
 		err = DB.Raw("select count(*) from posts p inner join post_tags pt on p.id = pt.post_id where pt.tag_id = ? and p.is_published = ?", tagId, true).Row().Scan(&count)
 	} else {
 		err = DB.Raw("select count(*) from posts p where p.is_published = ?", true).Row().Scan(&count)
@@ -334,19 +323,15 @@ func CountPostByTag(tag string) (count int, err error) {
 	return
 }
 
-func CountPost() int {
-	var count int
+func CountPost() int64 {
+	var count int64
 	DB.Model(&Post{}).Count(&count)
 	return count
 }
 
-func GetPostById(id string) (*Post, error) {
-	pid, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+func GetPostById(id uint) (*Post, error) {
 	var post Post
-	err = DB.First(&post, "id = ?", pid).Error
+	err := DB.First(&post, "id = ?", id).Error
 	return &post, err
 }
 
@@ -358,15 +343,16 @@ func MustListPostArchives() []*QrArchive {
 func ListPostArchives() ([]*QrArchive, error) {
 	var (
 		archives []*QrArchive
-		querysql string
+		querySql string
 	)
-	switch DB.Dialect().GetName() {
+	fmt.Println(DB.Dialector.Name())
+	switch DB.Dialector.Name() {
 	case "mysql":
-		querysql = `select date_format(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
-	case "sqlite3":
-		querysql = `select strftime('%Y-%m',created_at) as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+		querySql = `select date_format(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`
+	case "sqlite":
+		querySql = `select strftime('%Y-%m',created_at) as month,count(*) as total from posts where is_published = ? group by month order by month desc`
 	}
-	rows, err := DB.Raw(querysql, true).Rows()
+	rows, err := DB.Raw(querySql, true).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -388,28 +374,28 @@ func ListPostByArchive(year, month string, pageIndex, pageSize int) ([]*Post, er
 	var (
 		rows     *sql.Rows
 		err      error
-		querysql string
+		querySql string
 	)
 	if len(month) == 1 {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
 	if pageIndex > 0 {
-		switch DB.Dialect().GetName() {
+		switch DB.Dialector.Name() {
 		case "mysql":
-			querysql = `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc limit ? offset ?`
-		case "sqlite3":
-			querysql = `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc limit ? offset ?`
+			querySql = `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc limit ? offset ?`
+		case "sqlite":
+			querySql = `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc limit ? offset ?`
 		}
-		rows, err = DB.Raw(querysql, condition, true, pageSize, (pageIndex-1)*pageSize).Rows()
+		rows, err = DB.Raw(querySql, condition, true, pageSize, (pageIndex-1)*pageSize).Rows()
 	} else {
-		switch DB.Dialect().GetName() {
+		switch DB.Dialector.Name() {
 		case "mysql":
-			querysql = `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc`
-		case "sqlite3":
-			querysql = `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc`
+			querySql = `select * from posts where date_format(created_at,'%Y-%m') = ? and is_published = ? order by created_at desc`
+		case "sqlite":
+			querySql = `select * from posts where strftime('%Y-%m',created_at) = ? and is_published = ? order by created_at desc`
 		}
-		rows, err = DB.Raw(querysql, condition, true).Rows()
+		rows, err = DB.Raw(querySql, condition, true).Rows()
 	}
 	if err != nil {
 		return nil, err
@@ -425,18 +411,18 @@ func ListPostByArchive(year, month string, pageIndex, pageSize int) ([]*Post, er
 }
 
 func CountPostByArchive(year, month string) (count int, err error) {
-	var querysql string
+	var querySql string
 	if len(month) == 1 {
 		month = "0" + month
 	}
 	condition := fmt.Sprintf("%s-%s", year, month)
-	switch DB.Dialect().GetName() {
+	switch DB.Dialector.Name() {
 	case "mysql":
-		querysql = `select count(*) from posts where date_format(created_at,'%Y-%m') = ? and is_published = ?`
-	case "sqlite3":
-		querysql = `select count(*) from posts where strftime('%Y-%m',created_at) = ? and is_published = ?`
+		querySql = `select count(*) from posts where date_format(created_at,'%Y-%m') = ? and is_published = ?`
+	case "sqlite":
+		querySql = `select count(*) from posts where strftime('%Y-%m',created_at) = ? and is_published = ?`
 	}
-	err = DB.Raw(querysql, condition, true).Row().Scan(&count)
+	err = DB.Raw(querySql, condition, true).Row().Scan(&count)
 	return
 }
 
@@ -465,13 +451,9 @@ func MustListTag() []*Tag {
 	return tags
 }
 
-func ListTagByPostId(id string) ([]*Tag, error) {
+func ListTagByPostId(id uint) ([]*Tag, error) {
 	var tags []*Tag
-	pid, err := strconv.ParseUint(id, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	rows, err := DB.Raw("select t.* from tags t inner join post_tags pt on t.id = pt.tag_id where pt.post_id = ?", uint(pid)).Rows()
+	rows, err := DB.Raw("select t.* from tags t inner join post_tags pt on t.id = pt.tag_id where pt.post_id = ?", id).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -484,17 +466,17 @@ func ListTagByPostId(id string) ([]*Tag, error) {
 	return tags, nil
 }
 
-func CountTag() int {
-	var count int
+func CountTag() int64 {
+	var count int64
 	DB.Model(&Tag{}).Count(&count)
 	return count
 }
 
-func ListAllTag() ([]*Tag, error) {
+/*func ListAllTag() ([]*Tag, error) {
 	var tags []*Tag
 	err := DB.Model(&Tag{}).Find(&tags).Error
 	return tags, err
-}
+}*/
 
 // post_tags
 func (pt *PostTag) Insert() error {
@@ -540,7 +522,7 @@ func GetUser(id interface{}) (*User, error) {
 }
 
 func (user *User) UpdateProfile(avatarUrl, nickName string) error {
-	return DB.Model(user).Update(User{AvatarUrl: avatarUrl, NickName: nickName}).Error
+	return DB.Model(user).Updates(User{AvatarUrl: avatarUrl, NickName: nickName}).Error
 }
 
 func (user *User) UpdateEmail(email string) error {
@@ -558,7 +540,7 @@ func (user *User) UpdateGithubUserInfo() error {
 	} else {
 		githubLoginId = user.GithubLoginId
 	}
-	return DB.Model(user).Update(map[string]interface{}{
+	return DB.Model(user).UpdateColumns(map[string]interface{}{
 		"github_login_id": githubLoginId,
 		"avatar_url":      user.AvatarUrl,
 		"github_url":      user.GithubUrl,
@@ -566,7 +548,7 @@ func (user *User) UpdateGithubUserInfo() error {
 }
 
 func (user *User) Lock() error {
-	return DB.Model(user).Update(map[string]interface{}{
+	return DB.Model(user).UpdateColumns(map[string]interface{}{
 		"lock_state": user.LockState,
 	}).Error
 }
@@ -605,13 +587,9 @@ func (comment *Comment) Delete() error {
 	return DB.Delete(comment, "user_id = ?", comment.UserID).Error
 }
 
-func ListCommentByPostID(postId string) ([]*Comment, error) {
-	pid, err := strconv.ParseUint(postId, 10, 64)
-	if err != nil {
-		return nil, err
-	}
+func ListCommentByPostID(id uint) ([]*Comment, error) {
 	var comments []*Comment
-	rows, err := DB.Raw("select c.*,u.github_login_id nick_name,u.avatar_url,u.github_url from comments c inner join users u on c.user_id = u.id where c.post_id = ? order by created_at desc", uint(pid)).Rows()
+	rows, err := DB.Raw("select c.*,u.github_login_id nick_name,u.avatar_url,u.github_url from comments c inner join users u on c.user_id = u.id where c.post_id = ? order by created_at desc", id).Rows()
 	if err != nil {
 		return nil, err
 	}
@@ -630,8 +608,8 @@ func ListCommentByPostID(postId string) ([]*Comment, error) {
 	return &comment, err
 }*/
 
-func CountComment() int {
-	var count int
+func CountComment() int64 {
+	var count int64
 	DB.Model(&Comment{}).Count(&count)
 	return count
 }
@@ -642,7 +620,7 @@ func (s *Subscriber) Insert() error {
 }
 
 func (s *Subscriber) Update() error {
-	return DB.Model(s).Update(map[string]interface{}{
+	return DB.Model(s).UpdateColumns(map[string]interface{}{
 		"verify_state":    s.VerifyState,
 		"subscribe_state": s.SubscribeState,
 		"out_time":        s.OutTime,
@@ -651,18 +629,18 @@ func (s *Subscriber) Update() error {
 	}).Error
 }
 
-func ListSubscriber(invalid bool) ([]*Subscriber, error) {
+func ListSubscriber(valid bool) ([]*Subscriber, error) {
 	var subscribers []*Subscriber
 	db := DB.Model(&Subscriber{})
-	if invalid {
+	if valid {
 		db.Where("verify_state = ? and subscribe_state = ?", true, true)
 	}
 	err := db.Find(&subscribers).Error
 	return subscribers, err
 }
 
-func CountSubscriber() (int, error) {
-	var count int
+func CountSubscriber() (int64, error) {
+	var count int64
 	err := DB.Model(&Subscriber{}).Where("verify_state = ? and subscribe_state = ?", true, true).Count(&count).Error
 	return count, err
 }
