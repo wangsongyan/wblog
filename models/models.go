@@ -36,16 +36,16 @@ type Post struct {
 	Body         string     `gorm:"type:longtext"` // body
 	View         int        // view count
 	IsPublished  bool       // published or not
-	Tags         []*Tag     `gorm:"-"` // tags of post
-	Comments     []*Comment `gorm:"-"` // comments of post
-	CommentTotal int        `gorm:"-"` // count of comment
+	Tags         []*Tag     `gorm:"-"`  // tags of post
+	Comments     []*Comment `gorm:"-"`  // comments of post
+	CommentTotal int        `gorm:"->"` // count of comment
 }
 
 // table tags
 type Tag struct {
 	BaseModel
 	Name  string // tag name
-	Total int    `gorm:"-"` // count of post
+	Total int    `gorm:"->"` // count of post
 }
 
 // table post_tags
@@ -345,7 +345,6 @@ func ListPostArchives() ([]*QrArchive, error) {
 		archives []*QrArchive
 		querySql string
 	)
-	fmt.Println(DB.Dialector.Name())
 	switch DB.Dialector.Name() {
 	case "mysql":
 		querySql = `select date_format(created_at,'%Y-%m') as month,count(*) as total from posts where is_published = ? group by month order by month desc`

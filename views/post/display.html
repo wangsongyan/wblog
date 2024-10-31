@@ -159,8 +159,10 @@
             </comment>
 
             <div class="media">
-            {{if not .user and .cfg.Github.Enabled }}
+            {{if not .user}}
+                {{if .cfg.Github.Enabled}}
                 <a href="/auth/github">登录发表评论</a>
+                {{end}}
             {{else}}
                 <div id="messagebox" class="alert alert-danger" style="display: none;" role="alert"></div>
             <form id="commentForm" role="form" action="/visitor/new_comment" method="post">
