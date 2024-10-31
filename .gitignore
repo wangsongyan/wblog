@@ -23,3 +23,5 @@ request.token
 /vendor/*
 !/vendor/vendor.json
 dockerfile
+
+dist/
