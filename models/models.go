@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
+	_ "github.com/glebarez/sqlite"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday"
 	"github.com/wangsongyan/wblog/system"

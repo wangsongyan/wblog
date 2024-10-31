@@ -103,7 +103,7 @@ func defaultConfig() Configuration {
 		PublicDir:     "static",
 		ViewDir:       "views/**/*",
 		Database: Database{
-			Dialect: "sqlite3",
+			Dialect: "sqlite",
 			DSN:     "wblog.db?_loc=Asia/Shanghai",
 		},
 		Seo: Seo{
