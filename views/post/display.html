@@ -7,7 +7,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    {{template "meta.html" .}}
+    <meta name="description" content="{{truncate .post.Title 40}}">
+    <meta name="author" content="{{.cfg.Seo.Author}}">
+    <meta name="keywords" content="{{listtag}}">
 
     <title>Post - {{.post.Title}}</title>
 
@@ -157,7 +159,7 @@
             </comment>
 
             <div class="media">
-            {{if not .user}}
+            {{if not .user and .cfg.Github.Enabled }}
                 <a href="/auth/github">登录发表评论</a>
             {{else}}
                 <div id="messagebox" class="alert alert-danger" style="display: none;" role="alert"></div>

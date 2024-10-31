@@ -66,15 +66,19 @@
             </div>
         </form>
 
+        {{if .cfg.Github.Enabled }}
         <div class="social-auth-links text-center">
             <p>- OR -</p>
             <a href="/auth/github" class="btn btn-block btn-social btn-github btn-flat"><i class="fa fa-github"></i> Sign in using
                 Github</a>
         </div>
+        {{end}}
         <!-- /.social-auth-links -->
 
-        <a href="#">I forgot my password</a><br>
+        <!--<a href="#">I forgot my password</a><br>-->
+        {{if .cfg.SignupEnabled }}
         <a href="/signup" class="text-center">Register a new membership</a>
+        {{end}}
 
     </div>
     <!-- /.login-box-body -->
