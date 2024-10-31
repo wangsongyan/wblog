@@ -37,8 +37,9 @@ type (
 	}
 
 	Smms struct {
-		Enabled    bool   `toml:"enabled"`
-		FileServer string `toml:"fileserver"`
+		Enabled bool   `toml:"enabled"`
+		ApiUrl  string `toml:"apiurl"`
+		ApiKey  string `toml:"apikey"`
 	}
 
 	Github struct {
@@ -120,7 +121,7 @@ func defaultConfig() Configuration {
 			Bucket:     "",
 		},
 		Smms: Smms{
-			FileServer: "https://sm.ms/api/upload",
+			ApiUrl: "https://sm.ms/api/v2/upload",
 		},
 		Github: Github{
 			ClientId:     "",

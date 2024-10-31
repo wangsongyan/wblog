@@ -17,8 +17,9 @@ type SmmsUploader struct {
 }
 
 type SmmsRet struct {
-	Code string `json:"code"`
-	Data struct {
+	Code    string `json:"code"`
+	Success bool   `json:"success"`
+	Data    struct {
 		FileName  string `json:"filename"`
 		StoreName string `json:"storename"`
 		Size      int    `json:"size"`
@@ -35,10 +36,12 @@ type SmmsRet struct {
 func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHeader) (url string, err error) {
 	var (
 		resp      *http.Response
+		req       *http.Request
 		bodyBytes []byte
 		ret       SmmsRet
 		bodyBuf   = &bytes.Buffer{}
 		smmsFile  models.SmmsFile
+		cfg       = system.GetConfiguration()
 	)
 	bodyWriter := multipart.NewWriter(bodyBuf)
 	fileWriter, err := bodyWriter.CreateFormFile("smfile", fileHeader.Filename)
@@ -51,7 +54,14 @@ func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHead
 	}
 	bodyWriter.Close()
 
-	resp, err = http.Post(system.GetConfiguration().Smms.FileServer, bodyWriter.FormDataContentType(), bodyBuf)
+	req, err = http.NewRequest("POST", cfg.Smms.ApiUrl, bodyBuf)
+	if err != nil {
+		return
+	}
+	req.Header.Set("Content-Type", bodyWriter.FormDataContentType())
+	req.Header.Set("Authorization", cfg.Smms.ApiKey)
+
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -64,7 +74,7 @@ func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHead
 	if err != nil {
 		return
 	}
-	if ret.Code == "error" {
+	if !ret.Success {
 		err = errors.New(ret.Data.Msg)
 		return
 	}
