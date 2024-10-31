@@ -72,7 +72,12 @@ go run main.go
 4. 修改conf.toml，设置signup_enabled = false
 
 ### 注意事项
-1. 如果需求上传图片功能请自行申请七牛云存储空间，并修改配置文件填写
+1. 图床切换（**需开启对应图床配置**）
+   ```toml
+   file_server = "smms"
+   #file_server = "qiniu"
+   ```
+2. 如果需要保存图片到七牛云，请自行申请[七牛云存储空间](https://www.qiniu.com/)，并修改配置文件填写
     ```toml
    [qiniu]
    enabled = true
@@ -81,7 +86,13 @@ go run main.go
    fileserver = '自定义域名，例如https://example.com'
    bucket = 'wblog'
    ```
-2. 如果需要github登录评论功能请自行注册[github oauthapp](https://github.com/settings/developers)，并修改配置文件填写
+3. 如果需要保存图片到[sm.ms图床](https://sm.ms)，请自行注册账号并获取APIKey，并修改配置文件
+   ```toml
+   [smms]
+   enabled = true
+   apikey = '' 
+   ```
+4. 如果需要github登录评论功能请自行注册[github oauthapp](https://github.com/settings/developers)，并修改配置文件填写
     ```toml
    [github]
    enabled = true
@@ -89,7 +100,7 @@ go run main.go
    clientsecret = ''
    redirecturl = 'https://example.com/oauth2callback'
    ```
-3. 如果需要使用邮件订阅功能，请自行填写
+5. 如果需要使用邮件订阅功能，请自行填写
    ```toml
    [smtp]
    enabled = true
@@ -97,7 +108,15 @@ go run main.go
    password = '密码'
    host = 'smtp.163.com:25'
    ```
-4. GoLand运行时，修改`Run/Debug Configurations` > `Output Directory`选择到项目根目录，否则报模版目录找不到
+6. GoLand运行时，修改`Run/Debug Configurations` > `Output Directory`选择到项目根目录，否则报模板目录找不到
+7. 数据库切换，使用MySQL数据库时，请先创建`wblog`数据库(数据库名自便，与配置文件一致即可)
+   ```toml
+   [database]
+   dialect = 'sqlite'
+   dsn = 'wblog.db?_loc=Asia/Shanghai'
+   #dialect = 'mysql'
+   #dsn = 'root:mysql@/wblog?charset=utf8&parseTime=True&loc=Asia%2FShanghai'
+   ```
 
 ## 八、效果图
 
