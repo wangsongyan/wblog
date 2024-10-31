@@ -102,13 +102,13 @@ func PagePublish(c *gin.Context) {
 	defer writeJSON(c, res)
 	id := c.Param("id")
 	page, err := models.GetPageById(id)
-	if err == nil {
+	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	page.IsPublished = !page.IsPublished
 	err = page.Update()
-	if err == nil {
+	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
