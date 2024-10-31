@@ -190,7 +190,7 @@ func Oauth2Callback(c *gin.Context) {
 		if err == nil {
 			if user.LockState {
 				err = errors.New("Your account have been locked.")
-				HandleMessage(c, "Your account have been locked.")
+				HandleMessage(c, err.Error())
 				return
 			}
 		}
@@ -239,10 +239,17 @@ func exchangeTokenByCode(code string) (accessToken string, err error) {
 func getGithubUserInfoByAccessToken(token string) (*GithubUserInfo, error) {
 	var (
 		resp *http.Response
+		req  *http.Request
 		body []byte
 		err  error
 	)
-	resp, err = http.Get(fmt.Sprintf("https://api.github.com/user?access_token=%s", token))
+	req, err = http.NewRequest("GET", "https://api.github.com/user", nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", fmt.Sprintf("token %s", token))
+
+	resp, err = http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
