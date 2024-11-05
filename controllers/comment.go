@@ -39,13 +39,13 @@ func CommentPost(c *gin.Context) {
 		res["message"] = err.Error()
 		return
 	}
-	post, err = models.GetPostById(uint(pid))
+	post, err = models.GetPostById(pid)
 	if err != nil {
 		res["message"] = err.Error()
 		return
 	}
 	comment := &models.Comment{
-		PostID:  uint(pid),
+		PostID:  pid,
 		Content: content,
 		UserID:  userId,
 	}

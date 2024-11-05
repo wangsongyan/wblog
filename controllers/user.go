@@ -153,7 +153,7 @@ func Oauth2Callback(c *gin.Context) {
 	// exchange accesstoken by code
 	token, err := exchangeTokenByCode(code)
 	if err != nil {
-		seelog.Error(err)
+		seelog.Errorf("exchangeTokenByCode err: %v", err)
 		c.Redirect(http.StatusMovedPermanently, "/signin")
 		return
 	}
@@ -161,7 +161,7 @@ func Oauth2Callback(c *gin.Context) {
 	//get github userinfo by accesstoken
 	userInfo, err = getGithubUserInfoByAccessToken(token)
 	if err != nil {
-		seelog.Error(err)
+		seelog.Errorf("getGithubUserInfoByAccessToken err: %v", err)
 		c.Redirect(http.StatusMovedPermanently, "/signin")
 		return
 	}
@@ -169,8 +169,7 @@ func Oauth2Callback(c *gin.Context) {
 	sessionUser, exists := c.Get(ContextUserKey)
 	if exists { // 已登录
 		user, _ = sessionUser.(*models.User)
-		_, err1 := models.IsGithubIdExists(userInfo.Login, user.ID)
-		if err1 != nil { // 未绑定
+		if _, e := models.IsGithubIdExists(userInfo.Login, user.ID); e != nil { // 未绑定
 			if user.IsAdmin {
 				user.GithubLoginId = userInfo.Login
 			}
@@ -231,7 +230,7 @@ func exchangeTokenByCode(code string) (accessToken string, err error) {
 	// cache token
 	tokenCache := oauth.CacheFile("./request.token")
 	if err := tokenCache.PutToken(token); err != nil {
-		seelog.Error(err)
+		seelog.Errorf("tokenCache.PutToken err: %v", err)
 	}
 	return
 }
@@ -280,11 +279,7 @@ func ProfileUpdate(c *gin.Context) {
 	avatarUrl := c.PostForm("avatarUrl")
 	nickName := c.PostForm("nickName")
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, ok := sessionUser.(*models.User)
-	if !ok {
-		res["message"] = "server interval error"
-		return
-	}
+	user, _ := sessionUser.(*models.User)
 	err = user.UpdateProfile(avatarUrl, nickName)
 	if err != nil {
 		res["message"] = err.Error()
@@ -302,11 +297,7 @@ func BindEmail(c *gin.Context) {
 	defer writeJSON(c, res)
 	email := c.PostForm("email")
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, ok := sessionUser.(*models.User)
-	if !ok {
-		res["message"] = "server interval error"
-		return
-	}
+	user, _ := sessionUser.(*models.User)
 	if len(user.Email) > 0 {
 		res["message"] = "email have bound"
 		return
@@ -331,11 +322,7 @@ func UnbindEmail(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, ok := sessionUser.(*models.User)
-	if !ok {
-		res["message"] = "server interval error"
-		return
-	}
+	user, _ := sessionUser.(*models.User)
 	if user.Email == "" {
 		res["message"] = "email haven't bound"
 		return
@@ -355,11 +342,7 @@ func UnbindGithub(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, ok := sessionUser.(*models.User)
-	if !ok {
-		res["message"] = "server interval error"
-		return
-	}
+	user, _ := sessionUser.(*models.User)
 	if user.GithubLoginId == "" {
 		res["message"] = "github haven't bound"
 		return

@@ -147,14 +147,14 @@ func UnSubscribe(c *gin.Context) {
 	HandleMessage(c, "Unscribe Succeessful!")
 }
 
-func GetUnSubcribeUrl(subscriber *models.Subscriber) (string, error) {
+/*func GetUnSubcribeUrl(subscriber *models.Subscriber) (string, error) {
 	uuid := helpers.UUID()
 	signature := helpers.Md5(subscriber.Email + uuid)
 	subscriber.SecretKey = uuid
 	subscriber.Signature = signature
 	err := subscriber.Update()
 	return fmt.Sprintf("%s/unsubscribe?sid=%s", system.GetConfiguration().Domain, signature), err
-}
+}*/
 
 func sendEmailToSubscribers(subject, body string) (err error) {
 	var (

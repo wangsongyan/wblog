@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
 	"github.com/wangsongyan/wblog/models"
 	"github.com/wangsongyan/wblog/system"
@@ -68,6 +69,7 @@ func PageEdit(c *gin.Context) {
 	page, err := models.GetPageById(id)
 	if err != nil {
 		Handle404(c)
+		return
 	}
 	c.HTML(http.StatusOK, "page/modify.html", gin.H{
 		"page": page,
@@ -83,13 +85,14 @@ func PageUpdate(c *gin.Context) {
 	published := "on" == isPublished
 	id, err := ParamUint(c, "id")
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		HandleMessage(c, err.Error())
 		return
 	}
 	page := &models.Page{Title: title, Body: body, IsPublished: published}
 	page.ID = id
 	err = page.Update()
 	if err != nil {
+		seelog.Errorf("page.Update err: %v", err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

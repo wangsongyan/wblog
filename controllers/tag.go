@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/cihub/seelog"
 	"math"
 	"net/http"
 	"strconv"
@@ -48,11 +49,13 @@ func TagGet(c *gin.Context) {
 	}
 	posts, err = models.ListPublishedPost(tagName, pageIndex, pageSize)
 	if err != nil {
+		seelog.Errorf("models.ListPublishedPost err: %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	total, err = models.CountPostByTag(tagName)
 	if err != nil {
+		seelog.Errorf("models.CountPostByTag err: %v", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/cihub/seelog"
 	"github.com/gin-gonic/gin"
@@ -26,7 +27,8 @@ func RssGet(c *gin.Context) {
 	feed.Items = make([]*feeds.Item, 0)
 	posts, err := models.ListPublishedPost("", 0, 0)
 	if err != nil {
-		seelog.Error(err)
+		seelog.Errorf("models.ListPublishedPost err: %v", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
@@ -42,7 +44,8 @@ func RssGet(c *gin.Context) {
 	}
 	rss, err := feed.ToRss()
 	if err != nil {
-		seelog.Error(err)
+		seelog.Errorf("feed.ToRss err: %v", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	c.Writer.WriteString(rss)
