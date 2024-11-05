@@ -70,29 +70,33 @@ func LogoutGet(c *gin.Context) {
 func SignupPost(c *gin.Context) {
 	var (
 		err error
-		res = gin.H{}
 	)
-	defer writeJSON(c, res)
 	email := c.PostForm("email")
 	telephone := c.PostForm("telephone")
 	password := c.PostForm("password")
+	if len(email) == 0 || len(password) == 0 {
+		c.HTML(http.StatusOK, "auth/signup.html", gin.H{
+			"message": "email or password cannot be null",
+			"cfg":     system.GetConfiguration(),
+		})
+		return
+	}
 	user := &models.User{
 		Email:     email,
 		Telephone: telephone,
 		Password:  password,
 		IsAdmin:   true,
 	}
-	if len(user.Email) == 0 || len(user.Password) == 0 {
-		res["message"] = "email or password cannot be null"
-		return
-	}
 	user.Password = helpers.Md5(user.Email + user.Password)
 	err = user.Insert()
 	if err != nil {
-		res["message"] = "email already exists"
+		c.HTML(http.StatusOK, "auth/signup.html", gin.H{
+			"message": "email already exists",
+			"cfg":     system.GetConfiguration(),
+		})
 		return
 	}
-	res["succeed"] = true
+	c.Redirect(http.StatusMovedPermanently, "/signin")
 }
 
 func SigninPost(c *gin.Context) {
@@ -105,6 +109,7 @@ func SigninPost(c *gin.Context) {
 	if username == "" || password == "" {
 		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 			"message": "username or password cannot be null",
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
@@ -112,12 +117,14 @@ func SigninPost(c *gin.Context) {
 	if err != nil || user.Password != helpers.Md5(username+password) {
 		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 			"message": "invalid username or password",
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
 	if user.LockState {
 		c.HTML(http.StatusOK, "auth/signin.html", gin.H{
 			"message": "Your account have been locked",
+			"cfg":     system.GetConfiguration(),
 		})
 		return
 	}
