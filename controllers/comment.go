@@ -22,8 +22,8 @@ func CommentPost(c *gin.Context) {
 	userId, _ := sessionUserID.(uint)
 
 	verifyCode := c.PostForm("verifyCode")
+	captchaId := s.Get(SessionCaptcha).(string)
 	s.Delete(SessionCaptcha)
-	captchaId, _ := s.Get(SessionCaptcha).(string)
 	if !captcha.VerifyString(captchaId, verifyCode) {
 		res["message"] = "error verifyCode"
 		return
