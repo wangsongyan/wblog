@@ -52,7 +52,10 @@ func (u SmmsUploader) upload(file multipart.File, fileHeader *multipart.FileHead
 	if err != nil {
 		return
 	}
-	bodyWriter.Close()
+	err = bodyWriter.Close()
+	if err != nil {
+		return
+	}
 
 	req, err = http.NewRequest("POST", cfg.Smms.ApiUrl, bodyBuf)
 	if err != nil {

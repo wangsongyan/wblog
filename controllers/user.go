@@ -175,7 +175,7 @@ func Oauth2Callback(c *gin.Context) {
 
 	sessionUser, exists := c.Get(ContextUserKey)
 	if exists { // 已登录
-		user, _ = sessionUser.(*models.User)
+		user = sessionUser.(*models.User)
 		if _, e := models.IsGithubIdExists(userInfo.Login, user.ID); e != nil { // 未绑定
 			if user.IsAdmin {
 				user.GithubLoginId = userInfo.Login
@@ -286,7 +286,7 @@ func ProfileUpdate(c *gin.Context) {
 	avatarUrl := c.PostForm("avatarUrl")
 	nickName := c.PostForm("nickName")
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, _ := sessionUser.(*models.User)
+	user := sessionUser.(*models.User)
 	err = user.UpdateProfile(avatarUrl, nickName)
 	if err != nil {
 		res["message"] = err.Error()
@@ -304,7 +304,7 @@ func BindEmail(c *gin.Context) {
 	defer writeJSON(c, res)
 	email := c.PostForm("email")
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, _ := sessionUser.(*models.User)
+	user := sessionUser.(*models.User)
 	if len(user.Email) > 0 {
 		res["message"] = "email have bound"
 		return
@@ -329,7 +329,7 @@ func UnbindEmail(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, _ := sessionUser.(*models.User)
+	user := sessionUser.(*models.User)
 	if user.Email == "" {
 		res["message"] = "email haven't bound"
 		return
@@ -349,7 +349,7 @@ func UnbindGithub(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	sessionUser, _ := c.Get(ContextUserKey)
-	user, _ := sessionUser.(*models.User)
+	user := sessionUser.(*models.User)
 	if user.GithubLoginId == "" {
 		res["message"] = "github haven't bound"
 		return

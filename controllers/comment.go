@@ -18,9 +18,7 @@ func CommentPost(c *gin.Context) {
 	)
 	defer writeJSON(c, res)
 	s := sessions.Default(c)
-	sessionUserID := s.Get(SessionKey)
-	userId, _ := sessionUserID.(uint)
-
+	userId := s.Get(SessionKey).(uint)
 	verifyCode := c.PostForm("verifyCode")
 	captchaId := s.Get(SessionCaptcha).(string)
 	s.Delete(SessionCaptcha)
@@ -67,8 +65,7 @@ func CommentDelete(c *gin.Context) {
 	defer writeJSON(c, res)
 
 	s := sessions.Default(c)
-	sessionUserID := s.Get(SessionKey)
-	userId, _ := sessionUserID.(uint)
+	userId := s.Get(SessionKey).(uint)
 
 	cid, err = ParamUint(c, "id")
 	if err != nil {
