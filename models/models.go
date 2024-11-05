@@ -646,13 +646,13 @@ func CountSubscriber() (int64, error) {
 
 func GetSubscriberByEmail(mail string) (*Subscriber, error) {
 	var subscriber Subscriber
-	err := DB.Find(&subscriber, "email = ?", mail).Error
+	err := DB.First(&subscriber, "email = ?", mail).Error
 	return &subscriber, err
 }
 
 func GetSubscriberBySignature(key string) (*Subscriber, error) {
 	var subscriber Subscriber
-	err := DB.Find(&subscriber, "signature = ?", key).Error
+	err := DB.First(&subscriber, "signature = ?", key).Error
 	return &subscriber, err
 }
 
